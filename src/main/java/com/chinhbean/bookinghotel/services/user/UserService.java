@@ -97,7 +97,7 @@ public class UserService implements IUserService {
         newUser.setRole(role);
 
         // Kiểm tra nếu có accountId, không yêu cầu password
-        if (userDTO.getFacebookAccountId() == 0) {
+        if (userDTO.getFacebookAccountId() == null) {
             String password = userDTO.getPassword();
             String encodedPassword = passwordEncoder.encode(password);
             newUser.setPassword(encodedPassword);
@@ -125,8 +125,7 @@ public class UserService implements IUserService {
         }
         User existingUser = optionalUser.get();
 
-        if (existingUser.getFacebookAccountId() == 0
-                && existingUser.getGoogleAccountId().isEmpty()) {
+        if (existingUser.getFacebookAccountId() == null && existingUser.getGoogleAccountId() == null){
             if (!passwordEncoder.matches(userLoginDTO.getPassword(), existingUser.getPassword())) {
                 throw new BadCredentialsException(localizationUtils.getLocalizedMessage(MessageKeys.WRONG_PHONE_PASSWORD));
             }

@@ -42,20 +42,21 @@ public class JwtTokenUtils {
     public String generateToken(com.chinhbean.bookinghotel.entities.User user) throws InvalidParamException {
         Map<String, Object> claims = new HashMap<>();
         claims.put("phoneNumber", user.getPhoneNumber());
-        claims.put("email", user.getEmail());
         claims.put("userId", user.getId());
         claims.put("role", user.getRole().getRoleName());
-
-        String subject = user.getEmail() != null ? user.getEmail() : user.getPhoneNumber();
+        claims.put("email", user.getEmail() == null ? "" : user.getEmail());
 
         try {
             return Jwts.builder()
                     .setClaims(claims)
-                    .setSubject(subject)
+                    .setSubject(user.getPhoneNumber())
                     .setExpiration(new Date(System.currentTimeMillis() + expiration * 1000L))
                     .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                     .compact();
         } catch (Exception e) {
+            // Log the error
+            // logger.error("Cannot create JWT token", e);
+            // Throw a new InvalidParamException with the original exception as the cause
             throw new InvalidParamException(MessageKeys.TOKEN_GENERATION_FAILED, e);
         }
     }
