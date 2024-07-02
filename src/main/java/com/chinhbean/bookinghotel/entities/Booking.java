@@ -1,6 +1,7 @@
 package com.chinhbean.bookinghotel.entities;
 
 import com.chinhbean.bookinghotel.enums.BookingStatus;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -68,6 +69,10 @@ public class Booking {
     private Long phoneNumber;
 
     private String email;
+
+    @OneToOne(mappedBy = "booking", cascade = CascadeType.ALL)
+    @JsonBackReference
+    private PaymentTransaction paymentTransaction;
 
 }
 
