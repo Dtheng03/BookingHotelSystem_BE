@@ -20,4 +20,5 @@ public interface IBookingService {
 
      void updateStatus(Long bookingId, BookingStatus newStatus, String token) throws DataNotFoundException, PermissionDenyException;
 
+     void sendMailNotificationForBookingPayment(BookingResponse booking);
 }

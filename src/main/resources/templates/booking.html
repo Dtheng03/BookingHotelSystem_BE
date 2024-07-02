@@ -1,0 +1,64 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+    <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'/>
+    <title>Payment success</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+        h2 {
+            color: #4CAF50;
+        }
+        p {
+            color: #555555;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            background-color: #f9f9f9;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        span {
+            font-weight: bold;
+            color: #333333;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Payment success</h2>
+    <p>Dear <span th:text="${fullName}"></span>,</p>
+    <p>Your booking has been confirmed. Below are the details:</p>
+    <ul>
+        <li>Payment method: <span th:text="${paymentMethod}"></span></li>
+        <li>Check-in Date: <span th:text="${checkInDate}"></span></li>
+        <li>Check-out Date: <span th:text="${checkOutDate}"></span></li>
+        <li>Total Price: <span th:text="${totalPrice}"></span></li>
+    </ul>
+    <p>Thank you for choosing our hotel.</p>
+    <p>This is an automated email, please do not reply.</p>
+</div>
+</body>
+</html>

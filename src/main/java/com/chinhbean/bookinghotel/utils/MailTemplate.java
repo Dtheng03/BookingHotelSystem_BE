@@ -5,11 +5,14 @@ public class MailTemplate {
         public final static String USER_REGISTER = "ĐĂNG KÍ THÀNH CÔNG!";
 
         public final static String OTP_SEND = "MÃ OTP XÁC THỰC";
+
+        public final static String BOOKING_PAYMENT_SUCCESS = "PAYMENT SUCCESSFUL!";
     }
 
     public final static class SEND_MAIL_TEMPLATE {
         public final static String USER_REGISTER = "register";
 
         public final static String OTP_SEND_TEMPLATE = "otp-sent";
+        public final static String BOOKING_PAYMENT_SUCCESS_TEMPLATE = "booking";
     }
 }

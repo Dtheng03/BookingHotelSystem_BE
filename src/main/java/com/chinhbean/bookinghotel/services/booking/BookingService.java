@@ -3,6 +3,7 @@ package com.chinhbean.bookinghotel.services.booking;
 import com.chinhbean.bookinghotel.components.JwtTokenUtils;
 import com.chinhbean.bookinghotel.dtos.BookingDTO;
 import com.chinhbean.bookinghotel.dtos.BookingDetailDTO;
+import com.chinhbean.bookinghotel.dtos.DataMailDTO;
 import com.chinhbean.bookinghotel.entities.*;
 import com.chinhbean.bookinghotel.enums.BookingStatus;
 import com.chinhbean.bookinghotel.exceptions.DataNotFoundException;
@@ -12,7 +13,10 @@ import com.chinhbean.bookinghotel.repositories.IBookingRepository;
 import com.chinhbean.bookinghotel.repositories.IRoomTypeRepository;
 import com.chinhbean.bookinghotel.repositories.IUserRepository;
 import com.chinhbean.bookinghotel.responses.booking.BookingResponse;
+import com.chinhbean.bookinghotel.services.sendmails.IMailService;
+import com.chinhbean.bookinghotel.utils.MailTemplate;
 import com.chinhbean.bookinghotel.utils.MessageKeys;
+import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -26,7 +30,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -43,6 +49,7 @@ public class BookingService implements IBookingService {
     private final JwtTokenUtils jwtTokenUtils;
     private final IRoomTypeRepository roomTypeRepository;
     private final IBookingDetailRepository bookingDetailRepository;
+    private final IMailService mailService;
     private static final Logger logger = LoggerFactory.getLogger(BookingService.class);
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
@@ -238,6 +245,33 @@ public class BookingService implements IBookingService {
         }
         bookingRepository.save(booking);
         logger.info("Status for booking with ID: {} updated successfully.", bookingId);
+    }
+
+    @Override
+    public void sendMailNotificationForBookingPayment(BookingResponse booking) {
+        try {
+            DataMailDTO dataMail = new DataMailDTO();
+            dataMail.setTo(booking.getUser().getEmail());
+            dataMail.setSubject(MailTemplate.SEND_MAIL_SUBJECT.BOOKING_PAYMENT_SUCCESS);
+
+            Map<String, Object> props = new HashMap<>();
+            props.put("fullName", booking.getUser().getFullName());
+            props.put("checkInDate", booking.getCheckInDate());
+            props.put("checkOutDate", booking.getCheckOutDate());
+            props.put("totalPrice", booking.getTotalPrice());
+            props.put("paymentMethod", booking.getPaymentMethod());
+            List<BookingDetailDTO> details = booking.getBookingDetails();
+            for (BookingDetailDTO detail : details) {
+                //props.put("roomTypeName", detail.getRoomType().getRoomTypeName());
+                props.put("numberOfRooms", detail.getNumberOfRooms());
+                props.put("price", detail.getPrice());
+            }
+            dataMail.setProps(props);
+            mailService.sendHtmlMail(dataMail, MailTemplate.SEND_MAIL_TEMPLATE.BOOKING_PAYMENT_SUCCESS_TEMPLATE);
+            logger.info("Successfully sent booking payment success email to: {}", booking.getUser().getEmail());
+        } catch (Exception exp) {
+            logger.error("Failed to send booking payment success email", exp);
+        }
     }
 
     private BookingDetails convertToEntity(BookingDetailDTO detailDTO) {
