@@ -45,10 +45,10 @@ public class PaymentController {
 
         if ("00".equals(status)) {
             paymentService.updatePaymentTransactionStatus(bookingId, true);
-            response.sendRedirect("http://localhost:3000/payment-return");
+            response.sendRedirect("http://localhost:3000/payment-return/success");
         } else {
             paymentService.updatePaymentTransactionStatus(bookingId, false);
-            response.sendRedirect("http://localhost:3000/payment-return");
+            response.sendRedirect("http://localhost:3000/payment-return/failed");
         }
     }
 }
