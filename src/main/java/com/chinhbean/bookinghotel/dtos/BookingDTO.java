@@ -1,6 +1,5 @@
 package com.chinhbean.bookinghotel.dtos;
 
-import com.chinhbean.bookinghotel.enums.BookingStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;

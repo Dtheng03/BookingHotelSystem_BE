@@ -11,8 +11,8 @@ import com.chinhbean.bookinghotel.entities.Token;
 import com.chinhbean.bookinghotel.entities.User;
 import com.chinhbean.bookinghotel.exceptions.DataNotFoundException;
 import com.chinhbean.bookinghotel.repositories.IUserRepository;
-import com.chinhbean.bookinghotel.responses.user.LoginResponse;
 import com.chinhbean.bookinghotel.responses.ResponseObject;
+import com.chinhbean.bookinghotel.responses.user.LoginResponse;
 import com.chinhbean.bookinghotel.responses.user.UserListResponse;
 import com.chinhbean.bookinghotel.responses.user.UserResponse;
 import com.chinhbean.bookinghotel.services.token.ITokenService;
@@ -332,4 +332,30 @@ public class UserController {
         }
     }
 
+    @GetMapping("/oauth2/token")
+    public ResponseEntity<LoginResponse> handleOAuth2Token(
+            @RequestParam String token,
+            HttpServletRequest request) {
+        try {
+            User user = userService.getUserDetailsFromToken(token);
+            String userAgent = request.getHeader("User-Agent");
+            Token jwtToken = tokenService.addToken(user, token, isMobileDevice(userAgent));
+
+            LoginResponse loginResponse = LoginResponse.builder()
+                    .message("OAuth2 login successful")
+                    .token(jwtToken.getToken())
+                    .tokenType(jwtToken.getTokenType())
+                    .refreshToken(jwtToken.getRefreshToken())
+                    .fullName(user.getUsername())
+                    .roles(user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList())
+                    .id(user.getId())
+                    .build();
+            return ResponseEntity.ok(loginResponse);
+        } catch (Exception e) {
+            LoginResponse errorResponse = LoginResponse.builder()
+                    .message("OAuth2 login failed: " + e.getMessage())
+                    .build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
 }
