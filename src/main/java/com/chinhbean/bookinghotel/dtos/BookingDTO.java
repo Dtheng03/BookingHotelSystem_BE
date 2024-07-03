@@ -48,4 +48,7 @@ public class BookingDTO {
     @JsonProperty("booking-details")
     private List<BookingDetailDTO> bookingDetails;
 
+    @JsonProperty("hotel-id")
+    private Long hotelId;  // Add hotelId
+
 }

@@ -70,9 +70,9 @@ public class Booking {
 
     private String email;
 
-    @OneToOne(mappedBy = "booking", cascade = CascadeType.ALL)
-    @JsonBackReference
-    private PaymentTransaction paymentTransaction;
+    @ManyToOne
+    @JoinColumn(name = "hotel_id", nullable = false)
+    private Hotel hotel;
 
 }
 

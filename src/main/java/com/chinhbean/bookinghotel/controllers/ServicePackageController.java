@@ -6,6 +6,7 @@ import com.chinhbean.bookinghotel.services.pack.PackageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,6 +21,7 @@ public class ServicePackageController {
     private final PackageService packageService;
 
     @GetMapping("/get-all-package")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_PARTNER')")
     public ResponseEntity<ResponseObject> getAllPackages() {
         try {
             List<ServicePackage> packages = packageService.getAllPackages();
@@ -39,6 +41,7 @@ public class ServicePackageController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_PARTNER')")
     public ResponseEntity<ResponseObject> getPackageById(@PathVariable Long id) {
         try {
             ServicePackage servicePackage = packageService.getPackageById(id);
@@ -64,6 +67,7 @@ public class ServicePackageController {
     }
 
     @PostMapping("/create-package")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     public ResponseEntity<ResponseObject> createPackage(@Valid @RequestBody ServicePackage servicePackage, BindingResult result) {
         try {
             if (result.hasErrors()) {
@@ -91,6 +95,8 @@ public class ServicePackageController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
+
     public ResponseEntity<ResponseObject> updatePackage(@PathVariable Long id, @Valid @RequestBody ServicePackage servicePackage, BindingResult result) {
         try {
             if (result.hasErrors()) {
@@ -124,6 +130,7 @@ public class ServicePackageController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     public ResponseEntity<ResponseObject> deletePackage(@PathVariable Long id) {
         try {
             packageService.deletePackage(id);

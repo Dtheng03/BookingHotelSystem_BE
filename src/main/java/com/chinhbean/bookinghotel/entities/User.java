@@ -52,6 +52,10 @@ public class User extends BaseEntity implements UserDetails, OAuth2User {
     @JoinColumn(name = "role_id", columnDefinition = "bigint")
     private Role role;
 
+    @ManyToOne
+    @JoinColumn(name = "package_id", columnDefinition = "bigint")
+    private ServicePackage servicePackage;
+
     @Column(name = "modified_by")
     private String modifiedBy;
 
