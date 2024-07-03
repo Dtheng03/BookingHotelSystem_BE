@@ -60,10 +60,10 @@ public class User extends BaseEntity implements UserDetails, OAuth2User {
     private String modifiedBy;
 
     @Column(name = "facebook_account_id")
-    private int facebookAccountId;
+    private String facebookAccountId;
 
     @Column(name = "google_account_id")
-    private int googleAccountId;
+    private String googleAccountId;
     @Column(name = "avatar")
     private String avatar;
 
@@ -115,6 +115,6 @@ public class User extends BaseEntity implements UserDetails, OAuth2User {
 
     @Override
     public String getName() {
-        return getAttribute("fullname");
+        return getAttribute("fullName");
     }
 }
