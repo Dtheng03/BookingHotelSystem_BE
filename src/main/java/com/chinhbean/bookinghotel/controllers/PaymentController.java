@@ -1,7 +1,11 @@
 package com.chinhbean.bookinghotel.controllers;
 
 import com.chinhbean.bookinghotel.dtos.PaymentDTO;
+import com.chinhbean.bookinghotel.entities.Booking;
+import com.chinhbean.bookinghotel.exceptions.DataNotFoundException;
+import com.chinhbean.bookinghotel.responses.booking.BookingResponse;
 import com.chinhbean.bookinghotel.responses.payment.PaymentResponse;
+import com.chinhbean.bookinghotel.services.booking.IBookingService;
 import com.chinhbean.bookinghotel.services.payment.PaymentService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -19,6 +23,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class PaymentController {
     private final PaymentService paymentService;
+    private final IBookingService bookingService;
 
     @GetMapping("/vn-pay")
     public PaymentResponse<PaymentDTO.VNPayResponse> pay(
@@ -45,7 +50,13 @@ public class PaymentController {
 
         if ("00".equals(status)) {
             paymentService.updatePaymentTransactionStatus(bookingId, true);
-            response.sendRedirect("http://localhost:3000/payment-return/success");
+            try {
+                Booking booking = bookingService.getBookingById(Long.parseLong(bookingId));
+                bookingService.sendMailNotificationForBookingPayment(booking);
+                response.sendRedirect("http://localhost:3000/payment-return/success");
+            } catch (DataNotFoundException e) {
+                throw new RuntimeException(e);
+            }
         } else {
             paymentService.updatePaymentTransactionStatus(bookingId, false);
             response.sendRedirect("http://localhost:3000/payment-return/failed");

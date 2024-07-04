@@ -1,0 +1,109 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+    <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'/>
+    <title>Payment success</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+        h2 {
+            color: #007bff;
+        }
+        p {
+            color: #555555;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        table, th, td {
+            border: 1px solid #dddddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        span {
+            font-weight: bold;
+            color: #333333;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Payment success</h2>
+    <p>Dear <span th:text="${fullName}"></span>,</p>
+    <p>Your booking has been confirmed. Below are the details:</p>
+    <table>
+        <tr>
+            <th>Booking Detail</th>
+            <th>Information</th>
+        </tr>
+        <tr>
+            <td>Payment method:</td>
+            <td><span th:text="${paymentMethod}"></span></td>
+        </tr>
+        <tr>
+            <td>Booking ID:</td>
+            <td><span th:text="${bookingId}"></span></td>
+        </tr>
+        <tr>
+            <td>Booking Date:</td>
+            <td><span th:text="${bookingDate}"></span></td>
+        </tr>
+        <tr>
+            <td>Hotel name:</td>
+            <td><span th:text="${hotelName}"></span></td>
+        </tr>
+        <tr>
+            <td>Room name:</td>
+            <td><span th:text="${roomTypeName}"></span></td>
+        </tr>
+        <tr>
+            <td>Check-in Date:</td>
+            <td><span th:text="${checkInDate}"></span></td>
+        </tr>
+        <tr>
+            <td>Check-out Date:</td>
+            <td><span th:text="${checkOutDate}"></span></td>
+        </tr>
+        <tr>
+            <td>Price per room:</td>
+            <td><span th:text="${pricePerRoom}"></span></td>
+        </tr>
+        <tr>
+            <td>Number of rooms:</td>
+            <td><span th:text="${numberOfRooms}"></span></td>
+        </tr>
+        <tr>
+            <td>Total Price:</td>
+            <td><span th:text="${totalPrice}"></span></td>
+        </tr>
+    </table>
+    <p>Thank you for choosing our hotel.</p>
+    <p>This is an automated email, please do not reply.</p>
+</div>
+</body>
+</html>
