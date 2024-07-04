@@ -2,20 +2,20 @@ package com.chinhbean.bookinghotel.services.payment;
 
 import com.chinhbean.bookinghotel.configurations.VNPAYConfig;
 import com.chinhbean.bookinghotel.dtos.PaymentDTO;
-import com.chinhbean.bookinghotel.entities.Booking;
-import com.chinhbean.bookinghotel.entities.PaymentTransaction;
-import com.chinhbean.bookinghotel.entities.ServicePackage;
+import com.chinhbean.bookinghotel.entities.*;
 import com.chinhbean.bookinghotel.enums.BookingStatus;
-import com.chinhbean.bookinghotel.repositories.IBookingRepository;
-import com.chinhbean.bookinghotel.repositories.PaymentTransactionRepository;
-import com.chinhbean.bookinghotel.repositories.ServicePackageRepository;
+import com.chinhbean.bookinghotel.enums.PackageStatus;
+import com.chinhbean.bookinghotel.repositories.*;
 import com.chinhbean.bookinghotel.utils.VNPayUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -25,6 +25,10 @@ public class PaymentService {
     private final PaymentTransactionRepository paymentTransactionRepository;
     private final IBookingRepository bookingRepository;
     private final ServicePackageRepository servicePackageRepository;
+    private final IUserRepository userRepository;
+    private final IBookingDetailRepository bookingDetailRepository;
+    private final IRoomTypeRepository roomTypeRepository;
+
 
     @Transactional
     public PaymentDTO.VNPayResponse createVnPayPaymentForBooking(HttpServletRequest request) {
@@ -99,7 +103,7 @@ public class PaymentService {
     }
 
     @Transactional
-    public void updatePaymentTransactionStatus(String bookingId, boolean isSuccess) {
+    public void updatePaymentTransactionStatusForBooking(String bookingId, boolean isSuccess) {
         Long id = Long.parseLong(bookingId);
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Booking with ID: " + bookingId + " does not exist."));
@@ -108,7 +112,28 @@ public class PaymentService {
             booking.setStatus(BookingStatus.PAID);
         } else {
             booking.setStatus(BookingStatus.CANCELLED);
+            List<BookingDetails> bookingDetails = bookingDetailRepository.findByBookingId(id);
+            for (BookingDetails bookingDetail : bookingDetails) {
+                roomTypeRepository.incrementRoomQuantity(bookingDetail.getRoomType().getId(), bookingDetail.getNumberOfRooms());
+            }
         }
         bookingRepository.save(booking);
+    }
+
+    @Transactional
+    public void updatePaymentTransactionStatusForPackage(String packageId, boolean isSuccess) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+
+        if (isSuccess) {
+            currentUser.setStatus(PackageStatus.ACTIVE);
+            userRepository.save(currentUser);
+        } else {
+            currentUser.setServicePackage(null);
+            currentUser.setPackageStartDate(null);
+            currentUser.setPackageEndDate(null);
+            currentUser.setStatus(PackageStatus.INACTIVE);
+            userRepository.save(currentUser);
+        }
     }
 }

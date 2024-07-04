@@ -52,16 +52,25 @@ public class PaymentController {
     public void payCallbackHandler(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String status = request.getParameter("vnp_ResponseCode");
         String paymentId = request.getParameter("vnp_TxnRef");
-        String bookingId = request.getParameter("bookingId");
-        String packageId = request.getParameter("packageId"); // Assuming you pass packageId in VNPayConfig
+        String bookingId = null;
+        String packageId = null;
+        String orderInfo = request.getParameter("vnp_OrderInfo");
+
+        if (orderInfo != null && orderInfo.contains("don hang:")) {
+            bookingId = orderInfo.substring(orderInfo.indexOf("don hang:") + 9).trim();
+        }
+
+        if (orderInfo != null && orderInfo.contains("dich vu:")) {
+            packageId = orderInfo.substring(orderInfo.indexOf("dich vu:") + 8).trim();
+        }
 
         if ("00".equals(status)) {
             // Successful payment
             if (bookingId != null) {
-                paymentService.updatePaymentTransactionStatus(bookingId, true);
+                paymentService.updatePaymentTransactionStatusForBooking(bookingId, true);
                 response.sendRedirect("http://localhost:3000/payment-return/success");
             } else if (packageId != null) {
-                paymentService.updatePaymentTransactionStatus(packageId, true);
+                paymentService.updatePaymentTransactionStatusForPackage(packageId, true);
                 response.sendRedirect("http://localhost:3000/payment-return/success");
             } else {
                 // Handle unexpected case where neither bookingId nor packageId is present
@@ -69,8 +78,13 @@ public class PaymentController {
             }
         } else {
             // Payment failed
-            paymentService.updatePaymentTransactionStatus(paymentId, false);
+            if (bookingId != null) {
+                paymentService.updatePaymentTransactionStatusForBooking(bookingId, false);
+            } else if (packageId != null) {
+                paymentService.updatePaymentTransactionStatusForPackage(packageId, false);
+            }
             response.sendRedirect("http://localhost:3000/payment-return/failed");
         }
     }
+
 }
