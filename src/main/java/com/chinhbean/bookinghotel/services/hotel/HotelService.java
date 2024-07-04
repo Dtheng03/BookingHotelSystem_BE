@@ -91,14 +91,6 @@ public class HotelService implements IHotelService {
                     return new DataNotFoundException(localizationUtils.getLocalizedMessage(MessageKeys.HOTEL_DOES_NOT_EXISTS));
                 });
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User currentUser = (User) authentication.getPrincipal();
-
-        // Check if the current user is the owner of the hotel or an admin
-        if (!currentUser.getId().equals(hotel.getPartner().getId()) && !currentUser.getRole().getRoleName().equals(Role.ADMIN)) {
-            throw new PermissionDenyException(localizationUtils.getLocalizedMessage(MessageKeys.USER_DOES_NOT_HAVE_PERMISSION_TO_VIEW_HOTEL));
-        }
-
         logger.info("Successfully retrieved details for hotel with ID: {}", hotelId);
         return HotelResponse.fromHotel(hotel);
     }
