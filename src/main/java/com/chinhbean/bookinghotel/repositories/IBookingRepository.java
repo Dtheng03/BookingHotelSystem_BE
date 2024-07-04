@@ -2,6 +2,7 @@ package com.chinhbean.bookinghotel.repositories;
 
 import com.chinhbean.bookinghotel.entities.Booking;
 import com.chinhbean.bookinghotel.enums.BookingStatus;
+import com.chinhbean.bookinghotel.exceptions.DataNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
