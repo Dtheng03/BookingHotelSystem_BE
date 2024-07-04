@@ -3,7 +3,6 @@ package com.chinhbean.bookinghotel.controllers;
 import com.chinhbean.bookinghotel.dtos.PaymentDTO;
 import com.chinhbean.bookinghotel.entities.Booking;
 import com.chinhbean.bookinghotel.exceptions.DataNotFoundException;
-import com.chinhbean.bookinghotel.responses.booking.BookingResponse;
 import com.chinhbean.bookinghotel.responses.payment.PaymentResponse;
 import com.chinhbean.bookinghotel.services.booking.IBookingService;
 import com.chinhbean.bookinghotel.services.payment.PaymentService;

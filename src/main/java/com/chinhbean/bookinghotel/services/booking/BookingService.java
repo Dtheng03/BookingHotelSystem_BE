@@ -10,8 +10,10 @@ import com.chinhbean.bookinghotel.exceptions.PermissionDenyException;
 import com.chinhbean.bookinghotel.repositories.*;
 import com.chinhbean.bookinghotel.responses.booking.BookingResponse;
 import com.chinhbean.bookinghotel.services.sendmails.IMailService;
+import com.chinhbean.bookinghotel.utils.ExcelFileExporter;
 import com.chinhbean.bookinghotel.utils.MailTemplate;
 import com.chinhbean.bookinghotel.utils.MessageKeys;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.Hibernate;
@@ -27,6 +29,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -179,7 +182,8 @@ public class BookingService implements IBookingService {
         logger.info("Successfully retrieved all bookings.");
         return bookings.map(BookingResponse::fromBooking);
     }
-@Transactional
+
+    @Transactional
     @Override
     public Page<BookingResponse> getBookingsByHotel(Long hotelId, int page, int size) throws DataNotFoundException {
         logger.info("Fetching bookings for hotel with ID: {}", hotelId);
@@ -325,4 +329,9 @@ public class BookingService implements IBookingService {
         return BookingResponse.fromBooking(booking);
     }
 
+    @Override
+    public void exportBookingsToExcel(HttpServletResponse response) throws IOException {
+        List<Booking> bookings = bookingRepository.findAll();
+        ExcelFileExporter.exportBookingsListToExcel(bookings, response);
+    }
 }
