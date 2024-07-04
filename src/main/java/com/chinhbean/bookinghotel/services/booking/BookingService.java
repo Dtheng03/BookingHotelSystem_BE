@@ -160,7 +160,13 @@ public class BookingService implements IBookingService {
         Pageable pageable = PageRequest.of(page, size);
 
         Page<Booking> bookings;
-        bookings = bookingRepository.findAllByUserId(currentUser.getId(), pageable);
+
+        if(currentUser.getRole().getId() == 1){
+            bookings = bookingRepository.findAll(pageable);
+        } else {
+            bookings = bookingRepository.findAllByUserId(currentUser.getId(), pageable);
+
+        }
 
         if (bookings.isEmpty()) {
             logger.warn("No bookings found in the database.");
