@@ -14,6 +14,6 @@ public class MailTemplate {
 
         public final static String OTP_SEND_TEMPLATE = "otp-sent";
 
-        public final static String NEW_PASSWORD = "your-new-password";
+        public final static String NEW_PASSWORD = "new-password";
     }
 }

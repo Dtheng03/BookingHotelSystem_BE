@@ -175,6 +175,10 @@ public class BookingService implements IBookingService {
         logger.info("Successfully retrieved all bookings.");
         return bookings.map(BookingResponse::fromBooking);
     }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 54072c29d1bd528ea682ae208bb5f7177948b9ab
     @Transactional
     @Override
     public Page<BookingResponse> getBookingsByHotel(Long hotelId, int page, int size) throws DataNotFoundException, PermissionDenyException {

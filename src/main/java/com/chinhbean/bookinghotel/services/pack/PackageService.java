@@ -49,7 +49,7 @@ public class PackageService implements IPackageService {
         existingPackage.setName(updatedPackage.getName());
         existingPackage.setDescription(updatedPackage.getDescription());
         existingPackage.setPrice(updatedPackage.getPrice());
-            existingPackage.setDuration(updatedPackage.getDuration());
+        existingPackage.setDuration(updatedPackage.getDuration());
         return servicePackageRepository.save(existingPackage);
     }
 

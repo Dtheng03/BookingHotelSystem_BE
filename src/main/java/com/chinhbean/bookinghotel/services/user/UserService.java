@@ -125,7 +125,7 @@ public class UserService implements IUserService {
         }
         User existingUser = optionalUser.get();
 
-        if (existingUser.getFacebookAccountId() == null && existingUser.getGoogleAccountId() == null){
+        if (existingUser.getFacebookAccountId() == null && existingUser.getGoogleAccountId() == null) {
             if (!passwordEncoder.matches(userLoginDTO.getPassword(), existingUser.getPassword())) {
                 throw new BadCredentialsException(localizationUtils.getLocalizedMessage(MessageKeys.WRONG_PHONE_PASSWORD));
             }
