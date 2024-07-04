@@ -2,6 +2,7 @@ package com.chinhbean.bookinghotel;
 
 import com.chinhbean.bookinghotel.entities.Role;
 import com.chinhbean.bookinghotel.entities.User;
+import com.chinhbean.bookinghotel.enums.PackageStatus;
 import com.chinhbean.bookinghotel.repositories.IRoleRepository;
 import com.chinhbean.bookinghotel.repositories.IUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;

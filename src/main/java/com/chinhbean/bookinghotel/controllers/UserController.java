@@ -143,7 +143,7 @@ public class UserController {
 
         Token jwtToken = tokenService.addToken(userDetail, token, isMobileDevice(userAgent));
 
-        LoginResponse loginResponse = LoginResponse.builder()
+        LoginResponse.LoginResponseBuilder builder = LoginResponse.builder()
                 .message(MessageKeys.LOGIN_SUCCESSFULLY)
                 .token(jwtToken.getToken())
                 .tokenType(jwtToken.getTokenType())
@@ -152,8 +152,13 @@ public class UserController {
                 .email(userDetail.getEmail())
                 .phoneNumber(userDetail.getPhoneNumber())
                 .roles(userDetail.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList())
-                .id(userDetail.getId())
-                .build();
+                .id(userDetail.getId());
+
+        if (userDetail.getServicePackage() != null) {
+            builder.packageId(userDetail.getServicePackage().getId());
+        }
+
+        LoginResponse loginResponse = builder.build();
         return ResponseEntity.ok().body(ResponseObject.builder()
                 .message(MessageKeys.LOGIN_SUCCESSFULLY)
                 .data(loginResponse)

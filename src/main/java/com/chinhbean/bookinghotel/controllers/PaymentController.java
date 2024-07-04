@@ -1,11 +1,7 @@
 package com.chinhbean.bookinghotel.controllers;
 
 import com.chinhbean.bookinghotel.dtos.PaymentDTO;
-import com.chinhbean.bookinghotel.entities.Booking;
-import com.chinhbean.bookinghotel.exceptions.DataNotFoundException;
-import com.chinhbean.bookinghotel.responses.booking.BookingResponse;
 import com.chinhbean.bookinghotel.responses.payment.PaymentResponse;
-import com.chinhbean.bookinghotel.services.booking.IBookingService;
 import com.chinhbean.bookinghotel.services.payment.PaymentService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,42 +19,57 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class PaymentController {
     private final PaymentService paymentService;
-    private final IBookingService bookingService;
 
     @GetMapping("/vn-pay")
     public PaymentResponse<PaymentDTO.VNPayResponse> pay(
-            @RequestParam String bookingId,
+            @RequestParam(required = false) String bookingId,
+            @RequestParam(required = false) String packageId,
             @RequestParam String amount,
             @RequestParam(required = false) String bankCode,
             @RequestParam(required = false) String phoneGuest,
             @RequestParam(required = false) String nameGuest,
             @RequestParam(required = false) String emailGuest,
             HttpServletRequest request) {
-        request.setAttribute("bookingId", bookingId);
+
         request.setAttribute("amount", amount);
         request.setAttribute("bankCode", bankCode);
         request.setAttribute("phoneGuest", phoneGuest);
         request.setAttribute("nameGuest", nameGuest);
         request.setAttribute("emailGuest", emailGuest);
-        return new PaymentResponse<>(HttpStatus.OK, "Success", paymentService.createVnPayPayment(request));
+
+        if (bookingId != null) {
+            request.setAttribute("bookingId", bookingId);
+            return new PaymentResponse<>(HttpStatus.OK, "Success", paymentService.createVnPayPaymentForBooking(request));
+        } else if (packageId != null) {
+            request.setAttribute("packageId", packageId);
+            return new PaymentResponse<>(HttpStatus.OK, "Success", paymentService.createVnPayPaymentForPackage(request));
+        } else {
+            throw new IllegalArgumentException("Either bookingId or packageId must be provided");
+        }
     }
 
     @GetMapping("/vn-pay-callback")
     public void payCallbackHandler(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String status = request.getParameter("vnp_ResponseCode");
-        String bookingId = request.getParameter("vnp_TxnRef");
+        String paymentId = request.getParameter("vnp_TxnRef");
+        String bookingId = request.getParameter("bookingId");
+        String packageId = request.getParameter("packageId"); // Assuming you pass packageId in VNPayConfig
 
         if ("00".equals(status)) {
-            paymentService.updatePaymentTransactionStatus(bookingId, true);
-            try {
-                Booking booking = bookingService.getBookingById(Long.parseLong(bookingId));
-                bookingService.sendMailNotificationForBookingPayment(booking);
+            // Successful payment
+            if (bookingId != null) {
+                paymentService.updatePaymentTransactionStatus(bookingId, true);
                 response.sendRedirect("http://localhost:3000/payment-return/success");
-            } catch (DataNotFoundException e) {
-                throw new RuntimeException(e);
+            } else if (packageId != null) {
+                paymentService.updatePaymentTransactionStatus(packageId, true);
+                response.sendRedirect("http://localhost:3000/payment-return/success");
+            } else {
+                // Handle unexpected case where neither bookingId nor packageId is present
+                response.sendRedirect("http://localhost:3000/payment-return/failed");
             }
         } else {
-            paymentService.updatePaymentTransactionStatus(bookingId, false);
+            // Payment failed
+            paymentService.updatePaymentTransactionStatus(paymentId, false);
             response.sendRedirect("http://localhost:3000/payment-return/failed");
         }
     }

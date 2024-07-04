@@ -19,6 +19,7 @@ public class LoginResponse {
 
     @JsonProperty("refresh_token")
     private String refreshToken;
+
     private String tokenType = "Bearer";
     //user's detail
     private Long id;
@@ -32,4 +33,7 @@ public class LoginResponse {
     private String phoneNumber;
 
     private String email;
+
+    @JsonProperty("package_id")
+    private Long packageId;
 }

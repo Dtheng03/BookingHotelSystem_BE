@@ -71,7 +71,7 @@ public class BookingService implements IBookingService {
                 .orElseThrow(() -> new IllegalArgumentException("Hotel with ID: " + bookingDTO.getHotelId() + " does not exist."));
 
         booking = getBooking(bookingDTO, user, hotel);
-        booking.setExpirationDate(LocalDateTime.now().plusSeconds(300)); // Set expiration date to current time + 300 seconds
+        booking.setExpirationDate(LocalDateTime.now().plusSeconds(300));
 
         // Save booking first
         Booking savedBooking = bookingRepository.save(booking);
@@ -181,7 +181,7 @@ public class BookingService implements IBookingService {
         logger.info("Successfully retrieved all bookings.");
         return bookings.map(BookingResponse::fromBooking);
     }
-@Transactional
+    @Transactional
     @Override
     public Page<BookingResponse> getBookingsByHotel(Long hotelId, int page, int size) throws DataNotFoundException, PermissionDenyException {
         logger.info("Fetching bookings for hotel with ID: {}", hotelId);
@@ -204,7 +204,6 @@ public class BookingService implements IBookingService {
         List<BookingResponse> bookingResponses = bookings.stream()
                 .map(BookingResponse::fromBooking)
                 .collect(Collectors.toList());
-
         return new PageImpl<>(bookingResponses, pageable, bookings.getTotalElements());
     }
 
