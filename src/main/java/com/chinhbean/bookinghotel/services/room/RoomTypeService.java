@@ -41,15 +41,18 @@ public class RoomTypeService implements IRoomTypeService {
         // Convert DTO to entity
         RoomType roomType = convertToEntity(roomTypeDTO);
 
-        // Save the new Type entity
+        // Convert TypeRoomDTO to Type entity
         Type newType = convertToTypeEntity(roomTypeDTO.getTypes());
-        if (isValidType(newType)) {
-            Type savedType = typeRepository.save(newType);
-            // Assign the saved Type to the RoomType
-            roomType.setType(savedType);
-        } else {
+
+        // Validate if only one bedroom type is selected
+        if (!isValidType(newType)) {
             throw new IllegalArgumentException("Only one bedroom type can be selected");
         }
+
+        Type savedType = typeRepository.save(newType);
+        // Assign the saved Type to the RoomType
+        roomType.setType(savedType);
+
         Set<RoomConvenience> newConveniences = roomType.getRoomConveniences().stream()
                 .filter(convenience -> convenience.getId() == null)
                 .collect(Collectors.toSet());
