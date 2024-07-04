@@ -48,7 +48,7 @@ public class WebSecurityConfig implements WebMvcConfigurer {
         http
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(requests -> requests
-                        .requestMatchers("/api-docs/**", "/swagger-ui.html", "/swagger-ui/**", "/oauth2/**", "/login", "/login-error").permitAll()
+                        .requestMatchers("/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
                         .requestMatchers(
                                 String.format("%s/users/register", apiPrefix),
                                 String.format("%s/users/login", apiPrefix),
@@ -63,7 +63,8 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                                 String.format("%s/room-types/get-all-room-status/**", apiPrefix),
                                 String.format("%s/bookings/create-booking", apiPrefix),
                                 String.format("%s/payment/**", apiPrefix),
-                                String.format("%s/users/oauth2/token", apiPrefix)
+                                String.format("%s/users/oauth2/facebook", apiPrefix),
+                                String.format("%s/users/oauth2/google", apiPrefix)
                         )
                         .permitAll()
                         .anyRequest()
