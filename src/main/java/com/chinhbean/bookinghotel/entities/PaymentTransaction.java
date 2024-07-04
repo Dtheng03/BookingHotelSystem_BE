@@ -19,9 +19,14 @@ public class PaymentTransaction {
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "booking_id", nullable = false)
+    @JoinColumn(name = "booking_id")
     @JsonBackReference
     private Booking booking;
+
+    @OneToOne
+    @JoinColumn(name = "package_id")
+    @JsonBackReference
+    private ServicePackage servicePackage;
 
     @Column(nullable = false)
     private String phoneGuest;

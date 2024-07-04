@@ -2,7 +2,7 @@ package com.chinhbean.bookinghotel.controllers;
 
 import com.chinhbean.bookinghotel.entities.ServicePackage;
 import com.chinhbean.bookinghotel.responses.ResponseObject;
-import com.chinhbean.bookinghotel.services.pack.PackageService;
+import com.chinhbean.bookinghotel.services.pack.IPackageService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,7 +17,7 @@ import java.util.List;
 @RequestMapping("/api/v1/packages")
 @RequiredArgsConstructor
 public class ServicePackageController {
-    private final PackageService packageService;
+    private final IPackageService packageService;
 
     @GetMapping("/get-all-package")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_PARTNER')")
@@ -178,7 +178,7 @@ public class ServicePackageController {
     }
 
     @PostMapping("/check-package-expiration")
-    @PreAuthorize("hasAnyAuthority('ROLE_PARTNER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_PARTNER')")
     public ResponseEntity<ResponseObject> checkPackageExpiration() {
         try {
             boolean isExpired = packageService.checkAndHandlePackageExpiration();

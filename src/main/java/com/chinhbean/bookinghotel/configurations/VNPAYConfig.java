@@ -30,14 +30,14 @@ public class VNPAYConfig {
     @Value("${payment.vnPay.orderType}")
     private String orderType;
 
-    public Map<String, String> getVNPayConfig(String bookingId) {
+    public Map<String, String> getVNPayConfig(String id, String orderInfo) {
         Map<String, String> vnpParamsMap = new HashMap<>();
         vnpParamsMap.put("vnp_Version", this.vnp_Version);
         vnpParamsMap.put("vnp_Command", this.vnp_Command);
         vnpParamsMap.put("vnp_TmnCode", this.vnp_TmnCode);
         vnpParamsMap.put("vnp_CurrCode", "VND");
-        vnpParamsMap.put("vnp_TxnRef", bookingId);  // Use bookingId as vnp_TxnRef
-        vnpParamsMap.put("vnp_OrderInfo", "Thanh toan don hang:" + bookingId);
+        vnpParamsMap.put("vnp_TxnRef", id);
+        vnpParamsMap.put("vnp_OrderInfo", orderInfo);
         vnpParamsMap.put("vnp_OrderType", this.orderType);
         vnpParamsMap.put("vnp_Locale", "vn");
         vnpParamsMap.put("vnp_ReturnUrl", this.vnp_ReturnUrl);
