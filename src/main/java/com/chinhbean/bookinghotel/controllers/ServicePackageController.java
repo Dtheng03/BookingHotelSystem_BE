@@ -96,7 +96,6 @@ public class ServicePackageController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
-
     public ResponseEntity<ResponseObject> updatePackage(@PathVariable Long id, @Valid @RequestBody ServicePackage servicePackage, BindingResult result) {
         try {
             if (result.hasErrors()) {
@@ -153,4 +152,57 @@ public class ServicePackageController {
                             .build());
         }
     }
+
+    @PostMapping("/register-package/{packageId}")
+    @PreAuthorize("hasAnyAuthority('ROLE_PARTNER')")
+    public ResponseEntity<ResponseObject> registerPackage(@PathVariable Long packageId) {
+        try {
+            packageService.registerPackage(packageId);
+            return ResponseEntity.ok().body(
+                    ResponseObject.builder()
+                            .status(HttpStatus.OK)
+                            .message("Package registered successfully")
+                            .build());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    ResponseObject.builder()
+                            .status(HttpStatus.NOT_FOUND)
+                            .message(e.getMessage())
+                            .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ResponseObject.builder()
+                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .message("Failed to register package: " + e.getMessage())
+                            .build());
+        }
+    }
+
+    @PostMapping("/check-package-expiration")
+    @PreAuthorize("hasAnyAuthority('ROLE_PARTNER')")
+    public ResponseEntity<ResponseObject> checkPackageExpiration() {
+        try {
+            boolean isExpired = packageService.checkAndHandlePackageExpiration();
+            String message = isExpired ? "Package expired and reset" : "Package is still valid";
+            return ResponseEntity.ok().body(
+                    ResponseObject.builder()
+                            .status(HttpStatus.OK)
+                            .message(message)
+                            .build());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    ResponseObject.builder()
+                            .status(HttpStatus.NOT_FOUND)
+                            .message(e.getMessage())
+                            .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ResponseObject.builder()
+                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .message("Failed to check package expiration: " + e.getMessage())
+                            .build());
+        }
+    }
+
+
 }

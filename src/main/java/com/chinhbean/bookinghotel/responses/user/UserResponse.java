@@ -50,6 +50,9 @@ public class UserResponse {
     @JsonProperty("role")
     private com.chinhbean.bookinghotel.entities.Role role;
 
+    @JsonProperty("package_id")
+    private Long packageId;
+
     public static UserResponse fromUser(com.chinhbean.bookinghotel.entities.User user) {
         return UserResponse.builder()
                 .id(user.getId())
@@ -63,6 +66,7 @@ public class UserResponse {
                 .googleAccountId(user.getGoogleAccountId())
                 .role(user.getRole())
                 .avatar(user.getAvatar())
+                .packageId(user.getServicePackage().getId())
                 .build();
     }
 }

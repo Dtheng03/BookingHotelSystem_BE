@@ -7,6 +7,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
+import java.time.LocalDate;
 import java.util.*;
 
 @Entity
@@ -56,6 +57,12 @@ public class User extends BaseEntity implements UserDetails, OAuth2User {
     @JoinColumn(name = "package_id", columnDefinition = "bigint")
     private ServicePackage servicePackage;
 
+    @Column(name = "package_start_date")
+    private LocalDate packageStartDate;
+
+    @Column(name = "package_end_date")
+    private LocalDate packageEndDate;
+
     @Column(name = "modified_by")
     private String modifiedBy;
 
@@ -64,6 +71,7 @@ public class User extends BaseEntity implements UserDetails, OAuth2User {
 
     @Column(name = "google_account_id")
     private String googleAccountId;
+
     @Column(name = "avatar")
     private String avatar;
 

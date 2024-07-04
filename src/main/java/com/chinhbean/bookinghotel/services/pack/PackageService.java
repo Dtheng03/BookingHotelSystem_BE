@@ -1,8 +1,13 @@
 package com.chinhbean.bookinghotel.services.pack;
 
 import com.chinhbean.bookinghotel.entities.ServicePackage;
+import com.chinhbean.bookinghotel.entities.User;
+import com.chinhbean.bookinghotel.repositories.IUserRepository;
 import com.chinhbean.bookinghotel.repositories.ServicePackageRepository;
+import com.chinhbean.bookinghotel.services.user.IUserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -13,6 +18,7 @@ import java.util.List;
 public class PackageService implements IPackageService {
 
     private final ServicePackageRepository servicePackageRepository;
+    private final IUserRepository userRepository;
 
     public List<ServicePackage> getAllPackages() {
         return servicePackageRepository.findAll();
@@ -64,5 +70,52 @@ public class PackageService implements IPackageService {
             throw new IllegalArgumentException("Package duration must be at least 1 month");
         }
 
+    }
+
+    public void registerPackage(Long packageId) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+        Long userId = currentUser.getId();
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        ServicePackage servicePackage = servicePackageRepository.findById(packageId)
+                .orElseThrow(() -> new IllegalArgumentException("Package not found"));
+
+        LocalDate now = LocalDate.now();
+        if(servicePackage.getDuration() == 30){
+            if(now.isAfter(user.getPackageEndDate())){
+                user.setServicePackage(servicePackage);
+                user.setPackageStartDate(now);
+                user.setPackageEndDate(now.plusDays(30)); // Assuming package lasts for 30 days
+                userRepository.save(user);
+            }
+        } else {
+            user.setServicePackage(servicePackage);
+            user.setPackageStartDate(now);
+            user.setPackageEndDate(now.plusDays(365)); // Assuming package lasts for 30 days
+            userRepository.save(user);
+        }
+    }
+
+    public boolean checkAndHandlePackageExpiration() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+
+        currentUser = userRepository.findById(currentUser.getId())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        LocalDate now = LocalDate.now();
+
+        if (currentUser.getPackageEndDate() != null && now.isAfter(currentUser.getPackageEndDate())) {
+            currentUser.setServicePackage(null);
+            currentUser.setPackageStartDate(null);
+            currentUser.setPackageEndDate(null);
+            userRepository.save(currentUser);
+            return true;
+        }
+        return false; 
     }
 }

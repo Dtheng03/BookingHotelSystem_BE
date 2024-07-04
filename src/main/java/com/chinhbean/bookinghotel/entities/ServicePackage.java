@@ -28,6 +28,6 @@ public class ServicePackage {
     private Double price;
 
     @Column(name = "duration")
-    private Integer duration; // Thay đổi thành Integer để biểu thị số tháng
+    private Integer duration;
 
 }
