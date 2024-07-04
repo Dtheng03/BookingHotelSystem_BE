@@ -52,17 +52,17 @@ public class PaymentController {
     public void payCallbackHandler(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String status = request.getParameter("vnp_ResponseCode");
         String paymentId = request.getParameter("vnp_TxnRef");
-        String bookingId = request.getParameter("vnp_TxnRef");
+        String bookingId = request.getParameter("bookingId");
         String packageId = request.getParameter("packageId"); // Assuming you pass packageId in VNPayConfig
 
         if ("00".equals(status)) {
             // Successful payment
             if (bookingId != null) {
                 paymentService.updatePaymentTransactionStatus(bookingId, true);
-                response.sendRedirect("http://localhost:3000/payment-return/success-booking");
+                response.sendRedirect("http://localhost:3000/payment-return/success");
             } else if (packageId != null) {
                 paymentService.updatePaymentTransactionStatus(packageId, true);
-                response.sendRedirect("http://localhost:3000/payment-return/success-package");
+                response.sendRedirect("http://localhost:3000/payment-return/success");
             } else {
                 // Handle unexpected case where neither bookingId nor packageId is present
                 response.sendRedirect("http://localhost:3000/payment-return/failed");
