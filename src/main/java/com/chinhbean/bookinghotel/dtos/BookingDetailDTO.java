@@ -19,10 +19,15 @@ public class BookingDetailDTO {
     private Integer numberOfRooms;
     @JsonProperty("total-money")
     private BigDecimal totalMoney;
+    @JsonProperty("room-name")
+    private String roomName;
+
+
 
     public static BookingDetailDTO fromBookingDetail(BookingDetails bookingDetail) {
         return BookingDetailDTO.builder()
                 .roomTypeId(bookingDetail.getRoomType().getId())
+                .roomName(bookingDetail.getRoomType().getRoomTypeName())
                 .price(bookingDetail.getPrice())
                 .numberOfRooms(bookingDetail.getNumberOfRooms())
                 .totalMoney(bookingDetail.getTotalMoney())
