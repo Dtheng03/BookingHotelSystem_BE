@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.Set;
 
 public interface IBookingRepository extends JpaRepository<Booking, Long> {
@@ -22,6 +23,9 @@ public interface IBookingRepository extends JpaRepository<Booking, Long> {
 //    Page<Booking> findAllByPartnerId(@Param("partnerId") Long partnerId, Pageable pageable);
     @Query("SELECT b FROM Booking b WHERE b.hotel.id = :hotelId AND b.hotel.partner.id = :partnerId")
     Page<Booking> findByHotel_IdAndHotel_Partner_Id(Long hotelId, Long partnerId, Pageable pageable);
+
+    @Query("SELECT b FROM Booking b LEFT JOIN FETCH b.bookingDetails bd WHERE b.id = :bookingId")
+    Optional<Booking> findWithDetailsById(Long bookingId) throws DataNotFoundException;
 
 
 }
