@@ -1,31 +1,50 @@
 package com.chinhbean.bookinghotel.services.pack;
 
 import com.chinhbean.bookinghotel.entities.ServicePackage;
+import com.chinhbean.bookinghotel.entities.User;
+import com.chinhbean.bookinghotel.enums.PackageStatus;
+import com.chinhbean.bookinghotel.repositories.IUserRepository;
 import com.chinhbean.bookinghotel.repositories.ServicePackageRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
 public class PackageService implements IPackageService {
 
     private final ServicePackageRepository servicePackageRepository;
-
+    private final IUserRepository userRepository;
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    @Transactional
+    @Override
     public List<ServicePackage> getAllPackages() {
         return servicePackageRepository.findAll();
     }
-
+    @Transactional
+    @Override
     public ServicePackage getPackageById(Long id) {
         return servicePackageRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Package with ID: " + id + " does not exist."));
     }
-
+    @Transactional
+    @Override
     public ServicePackage createPackage(ServicePackage servicePackage) {
         validatePackage(servicePackage);
         return servicePackageRepository.save(servicePackage);
     }
+    @Transactional
+    @Override
 
     public ServicePackage updatePackage(Long id, ServicePackage updatedPackage) {
         ServicePackage existingPackage = getPackageById(id);
@@ -35,7 +54,8 @@ public class PackageService implements IPackageService {
         existingPackage.setDuration(updatedPackage.getDuration());
         return servicePackageRepository.save(existingPackage);
     }
-
+    @Transactional
+    @Override
     public void deletePackage(Long id) {
         ServicePackage existingPackage = getPackageById(id);
         servicePackageRepository.delete(existingPackage);
@@ -54,7 +74,6 @@ public class PackageService implements IPackageService {
             throw new IllegalArgumentException("Package duration must be greater than 0");
         }
 
-
         if (servicePackage.getDuration() > 12) {
             throw new IllegalArgumentException("Package duration cannot exceed 12 months");
         }
@@ -62,6 +81,71 @@ public class PackageService implements IPackageService {
         if (servicePackage.getDuration() < 1) {
             throw new IllegalArgumentException("Package duration must be at least 1 month");
         }
+    }
+    @Transactional
+    @Override
 
+    public void registerPackage(Long packageId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+        Long userId = currentUser.getId();
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        ServicePackage servicePackage = servicePackageRepository.findById(packageId)
+                .orElseThrow(() -> new IllegalArgumentException("Package not found"));
+
+        LocalDate now = LocalDate.now();
+        if (servicePackage.getDuration() == 30) {
+            if (now.isAfter(user.getPackageEndDate())) {
+                user.setServicePackage(servicePackage);
+                user.setPackageStartDate(now);
+                user.setPackageEndDate(now.plusDays(30));
+                user.setStatus(PackageStatus.PENDING);
+                userRepository.save(user);
+            }
+        } else {
+            user.setServicePackage(servicePackage);
+            user.setPackageStartDate(now);
+            user.setPackageEndDate(now.plusDays(365));
+            user.setStatus(PackageStatus.PENDING);
+            userRepository.save(user);
+        }
+
+        scheduler.schedule(() -> updatePackageIfPending(userId), 300, TimeUnit.SECONDS);
+    }
+
+    @Async
+    public CompletableFuture<Void> updatePackageIfPending(Long userId) {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user != null && PackageStatus.PENDING.equals(user.getStatus())) {
+            user.setServicePackage(null);
+            user.setPackageStartDate(null);
+            user.setPackageEndDate(null);
+            user.setStatus(PackageStatus.INACTIVE);
+            userRepository.save(user);
+        }
+        return CompletableFuture.completedFuture(null);
+    }
+    @Transactional
+    @Override
+    public boolean checkAndHandlePackageExpiration() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+
+        currentUser = userRepository.findById(currentUser.getId())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        LocalDate now = LocalDate.now();
+
+        if (currentUser.getPackageEndDate() != null && now.isAfter(currentUser.getPackageEndDate())) {
+            currentUser.setServicePackage(null);
+            currentUser.setPackageStartDate(null);
+            currentUser.setPackageEndDate(null);
+            userRepository.save(currentUser);
+            return true;
+        }
+        return false;
     }
 }

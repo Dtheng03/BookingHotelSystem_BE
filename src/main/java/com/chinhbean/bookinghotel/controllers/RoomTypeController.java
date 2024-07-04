@@ -47,7 +47,12 @@ public class RoomTypeController {
                     .data(createdRoomType)
                     .message(MessageKeys.INSERT_ROOM_TYPE_SUCCESSFULLY)
                     .build());
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseObject.builder()
+                    .status(HttpStatus.BAD_REQUEST)
+                    .message(e.getMessage())
+                    .build());
+        }catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseObject.builder()
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .message(e.getMessage())
