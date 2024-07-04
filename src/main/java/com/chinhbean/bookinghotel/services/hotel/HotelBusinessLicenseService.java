@@ -5,7 +5,6 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.chinhbean.bookinghotel.components.LocalizationUtils;
 import com.chinhbean.bookinghotel.entities.Hotel;
 import com.chinhbean.bookinghotel.entities.HotelBusinessLicense;
-import com.chinhbean.bookinghotel.exceptions.DataNotFoundException;
 import com.chinhbean.bookinghotel.repositories.IHotelBusinessLicenseRepository;
 import com.chinhbean.bookinghotel.repositories.IHotelRepository;
 import com.chinhbean.bookinghotel.responses.hotel.HotelBusinessLicenseResponse;
@@ -39,7 +38,7 @@ public class HotelBusinessLicenseService implements IHotelBusinessLicenseService
 
 
     @Override
-    public HotelResponse uploadBusinessLicense(List<MultipartFile> images, Long hotelId) throws IOException, DataNotFoundException {
+    public HotelResponse uploadBusinessLicense(List<MultipartFile> images, Long hotelId) throws IOException {
 
         List<HotelBusinessLicenseResponse> hotelBusinessLicenseResponses = new ArrayList<>();
         if (hotelRepository.findById(hotelId).isEmpty()) {

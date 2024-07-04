@@ -77,15 +77,16 @@ public class OAuth2Service implements IOAuth2Service {
         }
 
         User savedUser = userRepository.save(newUser);
-        sendPasswordEmail(email, randomPassword);
+        sendPasswordEmail(email, randomPassword, name);
         return savedUser;
     }
 
 
-    private void sendPasswordEmail(String email, String password) {
+    private void sendPasswordEmail(String email, String password, String name) {
         Map<String, Object> props = new HashMap<>();
         props.put("email", email);
         props.put("password", password);
+        props.put("name", name);
 
         DataMailDTO mailData = new DataMailDTO(email, MailTemplate.SEND_MAIL_SUBJECT.NEW_PASSWORD, "", props);
 

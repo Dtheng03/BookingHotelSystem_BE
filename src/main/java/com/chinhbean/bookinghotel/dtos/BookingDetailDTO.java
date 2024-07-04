@@ -23,7 +23,6 @@ public class BookingDetailDTO {
     private String roomName;
 
 
-
     public static BookingDetailDTO fromBookingDetail(BookingDetails bookingDetail) {
         return BookingDetailDTO.builder()
                 .roomTypeId(bookingDetail.getRoomType().getId())

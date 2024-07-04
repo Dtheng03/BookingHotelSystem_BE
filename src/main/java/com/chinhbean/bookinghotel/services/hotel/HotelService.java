@@ -81,7 +81,7 @@ public class HotelService implements IHotelService {
 
     @Transactional
     @Override
-    public HotelResponse getHotelDetail(Long hotelId) throws DataNotFoundException, PermissionDenyException {
+    public HotelResponse getHotelDetail(Long hotelId) throws DataNotFoundException {
         logger.info("Fetching details for hotel with ID: {}", hotelId);
         Hotel hotel = hotelRepository.findById(hotelId)
                 .orElseThrow(() -> {
@@ -239,7 +239,7 @@ public class HotelService implements IHotelService {
     }
 
     @Override
-    public Page<HotelResponse> filterHotelsByConveniencesAndRating(Integer rating, Boolean freeBreakfast, Boolean pickUpDropOff, Boolean restaurant, Boolean bar, Boolean pool, Boolean freeInternet, Boolean reception24h, Boolean laundry, int page, int size) throws DataNotFoundException {
+    public Page<HotelResponse> filterHotelsByConveniencesAndRating(Integer rating, Boolean freeBreakfast, Boolean pickUpDropOff, Boolean restaurant, Boolean bar, Boolean pool, Boolean freeInternet, Boolean reception24h, Boolean laundry, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Hotel> hotels = hotelRepository.filterHotelWithConvenience(rating, freeBreakfast, pickUpDropOff, restaurant, bar, pool, freeInternet, reception24h, laundry, pageable);
         return hotels.map(HotelResponse::fromHotel);

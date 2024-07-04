@@ -1,6 +1,5 @@
 package com.chinhbean.bookinghotel.services.booking;
 
-import com.chinhbean.bookinghotel.components.JwtTokenUtils;
 import com.chinhbean.bookinghotel.dtos.BookingDTO;
 import com.chinhbean.bookinghotel.dtos.BookingDetailDTO;
 import com.chinhbean.bookinghotel.entities.*;
@@ -41,7 +40,6 @@ public class BookingService implements IBookingService {
 
     private final IBookingRepository bookingRepository;
     private final IUserRepository IUserRepository;
-    private final JwtTokenUtils jwtTokenUtils;
     private final IRoomTypeRepository roomTypeRepository;
     private final IBookingDetailRepository bookingDetailRepository;
     private final IHotelRepository hotelRepository;
@@ -50,9 +48,9 @@ public class BookingService implements IBookingService {
 
     @Transactional
     @Override
-    public BookingResponse createBooking(BookingDTO bookingDTO) throws Exception {
-        User user = null;
-        Booking booking = null;
+    public BookingResponse createBooking(BookingDTO bookingDTO) {
+        User user;
+        Booking booking;
 
         if (bookingDTO.getUserId() != null) {
             user = IUserRepository.findById(bookingDTO.getUserId())
@@ -152,7 +150,7 @@ public class BookingService implements IBookingService {
 
     @Transactional
     @Override
-    public Page<BookingResponse> getListBooking(int page, int size) throws DataNotFoundException, PermissionDenyException {
+    public Page<BookingResponse> getListBooking(int page, int size) throws DataNotFoundException {
         logger.info("Fetching all bookings from the database.");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
@@ -161,7 +159,7 @@ public class BookingService implements IBookingService {
 
         Page<Booking> bookings;
 
-        if(currentUser.getRole().getId() == 1){
+        if (currentUser.getRole().getId() == 1) {
             bookings = bookingRepository.findAll(pageable);
         } else {
             bookings = bookingRepository.findAllByUserId(currentUser.getId(), pageable);
@@ -178,7 +176,7 @@ public class BookingService implements IBookingService {
 
     @Transactional
     @Override
-    public Page<BookingResponse> getBookingsByHotel(Long hotelId, int page, int size) throws DataNotFoundException, PermissionDenyException {
+    public Page<BookingResponse> getBookingsByHotel(Long hotelId, int page, int size) throws DataNotFoundException {
         logger.info("Fetching bookings for hotel with ID: {}", hotelId);
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
