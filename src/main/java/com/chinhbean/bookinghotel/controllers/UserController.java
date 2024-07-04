@@ -69,12 +69,6 @@ public class UserController {
     @Value("${spring.security.oauth2.client.registration.google.client-id}")
     private String googleClientId;
 
-    @Value("${spring.security.oauth2.client.registration.facebook.client-id}")
-    private String facebookAppId;
-
-    @Value("${spring.security.oauth2.client.registration.facebook.client-secret}")
-    private String facebookAppSecret;
-
     @GetMapping("/generate-secret-key")
     public ResponseEntity<?> generateSecretKey() {
         return ResponseEntity.ok(jwtTokenUtils.generateSecretKey());
@@ -364,7 +358,8 @@ public class UserController {
                     facebookGraphApiUrl,
                     HttpMethod.GET,
                     null,
-                    new ParameterizedTypeReference<>() {}
+                    new ParameterizedTypeReference<>() {
+                    }
             );
             Map<String, Object> userAttributes = response.getBody();
 

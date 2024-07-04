@@ -16,9 +16,10 @@ public interface IBookingService {
 
     Page<BookingResponse> getListBooking(int page, int size) throws DataNotFoundException, PermissionDenyException;
 
-     Booking updateBooking(Long bookingId, BookingDTO bookingDTO) throws DataNotFoundException;
+    Booking updateBooking(Long bookingId, BookingDTO bookingDTO) throws DataNotFoundException;
 
-     void updateStatus(Long bookingId, BookingStatus newStatus) throws DataNotFoundException, PermissionDenyException;
+    void updateStatus(Long bookingId, BookingStatus newStatus) throws DataNotFoundException, PermissionDenyException;
+
     Page<BookingResponse> getBookingsByHotel(Long hotelId, int page, int size) throws DataNotFoundException, PermissionDenyException;
 
 
