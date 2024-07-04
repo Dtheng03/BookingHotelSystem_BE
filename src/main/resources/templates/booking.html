@@ -25,20 +25,25 @@
             text-align: center;
         }
         h2 {
-            color: #4CAF50;
+            color: #007bff;
         }
         p {
             color: #555555;
         }
-        ul {
-            list-style-type: none;
-            padding: 0;
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
         }
-        li {
-            background-color: #f9f9f9;
-            margin: 10px 0;
+        table, th, td {
+            border: 1px solid #dddddd;
+        }
+        th, td {
             padding: 10px;
-            border-radius: 4px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
         }
         span {
             font-weight: bold;
@@ -51,12 +56,52 @@
     <h2>Payment success</h2>
     <p>Dear <span th:text="${fullName}"></span>,</p>
     <p>Your booking has been confirmed. Below are the details:</p>
-    <ul>
-        <li>Payment method: <span th:text="${paymentMethod}"></span></li>
-        <li>Check-in Date: <span th:text="${checkInDate}"></span></li>
-        <li>Check-out Date: <span th:text="${checkOutDate}"></span></li>
-        <li>Total Price: <span th:text="${totalPrice}"></span></li>
-    </ul>
+    <table>
+        <tr>
+            <th>Booking Detail</th>
+            <th>Information</th>
+        </tr>
+        <tr>
+            <td>Payment method:</td>
+            <td><span th:text="${paymentMethod}"></span></td>
+        </tr>
+        <tr>
+            <td>Booking ID:</td>
+            <td><span th:text="${bookingId}"></span></td>
+        </tr>
+        <tr>
+            <td>Booking Date:</td>
+            <td><span th:text="${bookingDate}"></span></td>
+        </tr>
+        <tr>
+            <td>Hotel name:</td>
+            <td><span th:text="${hotelName}"></span></td>
+        </tr>
+        <tr>
+            <td>Room name:</td>
+            <td><span th:text="${roomTypeName}"></span></td>
+        </tr>
+        <tr>
+            <td>Check-in Date:</td>
+            <td><span th:text="${checkInDate}"></span></td>
+        </tr>
+        <tr>
+            <td>Check-out Date:</td>
+            <td><span th:text="${checkOutDate}"></span></td>
+        </tr>
+        <tr>
+            <td>Price per room:</td>
+            <td><span th:text="${pricePerRoom}"></span></td>
+        </tr>
+        <tr>
+            <td>Number of rooms:</td>
+            <td><span th:text="${numberOfRooms}"></span></td>
+        </tr>
+        <tr>
+            <td>Total Price:</td>
+            <td><span th:text="${totalPrice}"></span></td>
+        </tr>
+    </table>
     <p>Thank you for choosing our hotel.</p>
     <p>This is an automated email, please do not reply.</p>
 </div>

@@ -22,5 +22,7 @@ public interface IBookingService {
     Page<BookingResponse> getBookingsByHotel(Long hotelId, int page, int size) throws DataNotFoundException, PermissionDenyException;
 
 
-     void sendMailNotificationForBookingPayment(BookingResponse booking);
+     void sendMailNotificationForBookingPayment(Booking booking);
+
+     Booking getBookingById(Long bookingId) throws DataNotFoundException;
 }

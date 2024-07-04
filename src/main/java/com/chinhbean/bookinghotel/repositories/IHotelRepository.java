@@ -20,8 +20,11 @@ public interface IHotelRepository extends JpaRepository<Hotel, Long>, JpaSpecifi
     Page<Hotel> findAllByStatus(HotelStatus hotelStatus, Pageable pageable);
 
     @Query("SELECT DISTINCT h FROM Hotel h " +
-            "JOIN h.roomTypes rt " +
-            "JOIN h.location hl " +
+            "LEFT JOIN FETCH h.roomTypes rt " +
+            "LEFT JOIN FETCH rt.type t " +
+            "LEFT JOIN FETCH rt.roomConveniences rc " +
+            "LEFT JOIN FETCH rt.roomImages " +
+            "LEFT JOIN FETCH h.location hl " +
             "WHERE hl.province = :province " +
             "AND h.status = 'ACTIVE' " +
             "AND rt.capacityPerRoom >= :capacity " +
