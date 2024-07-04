@@ -32,10 +32,22 @@ public class OAuth2Config {
         public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
             DefaultOAuth2UserService delegate = new DefaultOAuth2UserService();
             OAuth2User oauth2User = delegate.loadUser(userRequest);
+
+            String registrationId = userRequest.getClientRegistration().getRegistrationId();
             String email = oauth2User.getAttribute("email");
             String name = oauth2User.getAttribute("name");
-            String googleId = oauth2User.getAttribute("sub");
-            User user = oAuth2Service.processGoogleUser(email, name, googleId);
+
+            User user;
+            if ("google".equals(registrationId)) {
+                String googleId = oauth2User.getAttribute("sub");
+                user = oAuth2Service.processGoogleUser(email, name, googleId);
+            } else if ("facebook".equals(registrationId)) {
+                String facebookId = oauth2User.getAttribute("id");
+                user = oAuth2Service.processFacebookUser(email, name, facebookId);
+            } else {
+                throw new OAuth2AuthenticationException("Login with " + registrationId + " is not supported");
+            }
+
             return new OAuth2UserDetails(user, oauth2User.getAttributes());
         }
     }

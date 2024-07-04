@@ -56,10 +56,29 @@ public class BookingResponse {
     @JsonProperty("booking-details")
     private List<BookingDetailDTO> bookingDetails;
 
+    @JsonProperty("full-name")
+    private String fullName;
+
+    @JsonProperty("phone-number")
+    private String phoneNumber;
+
+    @JsonProperty("email")
+    private String email;
+
+    @JsonProperty("hotel-name")
+    private String hotelName;
+
+
+
+
+
     public static BookingResponse fromBooking(Booking booking) {
         UserResponse userResponse = UserResponse.fromUser(booking.getUser());
 
         return BookingResponse.builder()
+                .phoneNumber(String.valueOf(booking.getPhoneNumber()))
+                .email(booking.getEmail())
+                .fullName(booking.getFullName())
                 .bookingId(booking.getBookingId())
                 .user(userResponse)
                 .totalPrice(booking.getTotalPrice())
@@ -71,6 +90,7 @@ public class BookingResponse {
                 .bookingDate(booking.getBookingDate())
                 .paymentMethod(booking.getPaymentMethod())
                 .expirationDate(booking.getExpirationDate())
+                .hotelName(booking.getHotel().getHotelName())
                 .bookingDetails(booking.getBookingDetails().stream()
                         .map(BookingDetailDTO::fromBookingDetail)
                         .toList())

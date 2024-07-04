@@ -32,23 +32,55 @@ public class OAuth2Service implements IOAuth2Service {
     @Override
     public User processGoogleUser(String email, String name, String googleId) {
         return userRepository.findByEmail(email)
-                .orElseGet(() -> createGoogleUser(email, name, googleId));
+                .map(this::updateGoogleUser)
+                .orElseGet(() -> createOAuth2User(email, name, googleId, true));
     }
 
-    private User createGoogleUser(String email, String name, String googleId) {
+    @Transactional
+    @Override
+    public User processFacebookUser(String email, String name, String facebookId) {
+        return userRepository.findByEmail(email)
+                .map(this::updateFacebookUser)
+                .orElseGet(() -> createOAuth2User(email, name, facebookId, false));
+    }
+
+    private User updateGoogleUser(User user) {
+        if (user.getGoogleAccountId() == null) {
+            user.setGoogleAccountId(user.getEmail());
+            return userRepository.save(user);
+        }
+        return user;
+    }
+
+    private User updateFacebookUser(User user) {
+        if (user.getFacebookAccountId() == null) {
+            user.setFacebookAccountId(user.getEmail());
+            return userRepository.save(user);
+        }
+        return user;
+    }
+
+    private User createOAuth2User(String email, String name, String accountId, boolean isGoogle) {
         String randomPassword = UUID.randomUUID().toString().substring(0, 8);
         User newUser = User.builder()
                 .email(email)
                 .fullName(name)
-                .googleAccountId(googleId)
                 .password(passwordEncoder.encode(randomPassword))
                 .active(true)
                 .role(roleRepository.findByRoleName(Role.CUSTOMER))
                 .build();
+
+        if (isGoogle) {
+            newUser.setGoogleAccountId(accountId);
+        } else {
+            newUser.setFacebookAccountId(accountId);
+        }
+
         User savedUser = userRepository.save(newUser);
         sendPasswordEmail(email, randomPassword);
         return savedUser;
     }
+
 
     private void sendPasswordEmail(String email, String password) {
         Map<String, Object> props = new HashMap<>();

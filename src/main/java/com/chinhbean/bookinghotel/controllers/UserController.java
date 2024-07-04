@@ -30,9 +30,11 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -43,13 +45,15 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @RestController
-@RequestMapping("api/v1/users")
+@RequestMapping("${api.prefix}/users")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 
@@ -62,9 +66,8 @@ public class UserController {
     private final IOAuth2Service oAuth2Service;
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
-    @Value("${google.client-id}")
+    @Value("${spring.security.oauth2.client.registration.google.client-id}")
     private String googleClientId;
-
 
     @GetMapping("/generate-secret-key")
     public ResponseEntity<?> generateSecretKey() {
@@ -346,8 +349,58 @@ public class UserController {
         }
     }
 
-    @GetMapping("/oauth2/token")
-    public ResponseEntity<LoginResponse> handleOAuth2Token(@RequestParam String token, HttpServletRequest request) {
+    @PostMapping("/oauth2/facebook")
+    public ResponseEntity<LoginResponse> handleFacebookLogin(@RequestParam String accessToken, HttpServletRequest request) {
+        try {
+            String facebookGraphApiUrl = "https://graph.facebook.com/me?fields=id,name,email&access_token=" + accessToken;
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                    facebookGraphApiUrl,
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<>() {
+                    }
+            );
+            Map<String, Object> userAttributes = response.getBody();
+
+            if (userAttributes != null && userAttributes.containsKey("id")) {
+                String facebookId = (String) userAttributes.get("id");
+                String email = (String) userAttributes.get("email");
+                String name = (String) userAttributes.get("name");
+
+                User user = oAuth2Service.processFacebookUser(email, name, facebookId);
+
+                String userAgent = request.getHeader("User-Agent");
+                String jwtToken = jwtTokenUtils.generateToken(user);
+                Token savedToken = tokenService.addToken(user, jwtToken, isMobileDevice(userAgent));
+
+                LoginResponse loginResponse = LoginResponse.builder()
+                        .message("Facebook login successful")
+                        .token(savedToken.getToken())
+                        .tokenType(savedToken.getTokenType())
+                        .refreshToken(savedToken.getRefreshToken())
+                        .fullName(user.getFullName())
+                        .email(user.getEmail())
+                        .phoneNumber(user.getPhoneNumber())
+                        .roles(user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList())
+                        .id(user.getId())
+                        .build();
+                return ResponseEntity.ok(loginResponse);
+            } else {
+                return ResponseEntity.badRequest().body(LoginResponse.builder()
+                        .message("Invalid Facebook access token")
+                        .build());
+            }
+        } catch (Exception e) {
+            logger.error("Error during Facebook login: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(LoginResponse.builder()
+                    .message("Facebook login failed: " + e.getMessage())
+                    .build());
+        }
+    }
+
+    @GetMapping("/oauth2/google")
+    public ResponseEntity<LoginResponse> handleGoogleLogin(@RequestParam String token, HttpServletRequest request) {
         try {
             if (token == null || token.isEmpty()) {
                 String authHeader = request.getHeader("Authorization");
@@ -380,7 +433,7 @@ public class UserController {
                 Token savedToken = tokenService.addToken(user, jwtToken, isMobileDevice(userAgent));
 
                 LoginResponse loginResponse = LoginResponse.builder()
-                        .message("OAuth2 login successful")
+                        .message("Google login successful")
                         .token(savedToken.getToken())
                         .tokenType(savedToken.getTokenType())
                         .refreshToken(savedToken.getRefreshToken())
@@ -399,12 +452,11 @@ public class UserController {
                 return ResponseEntity.badRequest().body(errorResponse);
             }
         } catch (Exception e) {
-            logger.error("Error during OAuth2 token verification: ", e);
+            logger.error("Error during Google login: ", e);
             LoginResponse errorResponse = LoginResponse.builder()
-                    .message("OAuth2 login failed: " + e.getMessage())
+                    .message("Google login failed: " + e.getMessage())
                     .build();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
-
 }
