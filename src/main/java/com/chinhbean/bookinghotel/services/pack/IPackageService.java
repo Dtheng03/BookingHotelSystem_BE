@@ -17,5 +17,5 @@ public interface IPackageService {
 
      void registerPackage(Long packageId);
 
-     boolean checkAndHandlePackageExpiration(Long userId);
+     boolean checkAndHandlePackageExpiration();
 }

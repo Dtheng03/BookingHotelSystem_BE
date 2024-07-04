@@ -1,5 +1,7 @@
 package com.chinhbean.bookinghotel.entities;
 
+import com.chinhbean.bookinghotel.enums.BookingStatus;
+import com.chinhbean.bookinghotel.enums.PackgageStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -40,8 +42,9 @@ public class User extends BaseEntity implements UserDetails, OAuth2User {
     @Column(name = "is_active")
     private boolean active;
 
-    @Column(name = "status")
-    private int status;
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private PackgageStatus status;
 
     @Column(name = "date_of_birth")
     private Date dateOfBirth;

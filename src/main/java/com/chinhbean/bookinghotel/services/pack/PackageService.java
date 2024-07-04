@@ -1,17 +1,26 @@
 package com.chinhbean.bookinghotel.services.pack;
 
+import com.chinhbean.bookinghotel.entities.Booking;
+import com.chinhbean.bookinghotel.entities.BookingDetails;
 import com.chinhbean.bookinghotel.entities.ServicePackage;
 import com.chinhbean.bookinghotel.entities.User;
+import com.chinhbean.bookinghotel.enums.BookingStatus;
+import com.chinhbean.bookinghotel.enums.PackgageStatus;
 import com.chinhbean.bookinghotel.repositories.IUserRepository;
 import com.chinhbean.bookinghotel.repositories.ServicePackageRepository;
 import com.chinhbean.bookinghotel.services.user.IUserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +28,7 @@ public class PackageService implements IPackageService {
 
     private final ServicePackageRepository servicePackageRepository;
     private final IUserRepository userRepository;
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     public List<ServicePackage> getAllPackages() {
         return servicePackageRepository.findAll();
@@ -96,10 +106,23 @@ public class PackageService implements IPackageService {
             user.setServicePackage(servicePackage);
             user.setPackageStartDate(now);
             user.setPackageEndDate(now.plusDays(365)); // Assuming package lasts for 30 days
+            user.setStatus(PackgageStatus.PENDING);
             userRepository.save(user);
         }
-    }
 
+        scheduler.schedule(() -> updatePackageIfPending(userId), 300, TimeUnit.SECONDS);
+    }
+    @Async
+    public CompletableFuture<Void> updatePackageIfPending(Long userId) {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user != null && PackgageStatus.PENDING.equals(user.getStatus())) {
+            user.setServicePackage(null);
+            user.setPackageStartDate(null);
+            user.setPackageEndDate(null);
+            userRepository.save(user);
+        }
+        return CompletableFuture.completedFuture(null);
+    }
     public boolean checkAndHandlePackageExpiration() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
@@ -116,6 +139,6 @@ public class PackageService implements IPackageService {
             userRepository.save(currentUser);
             return true;
         }
-        return false; 
+        return false;
     }
 }
