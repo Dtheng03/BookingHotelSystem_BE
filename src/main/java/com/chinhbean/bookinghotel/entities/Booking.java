@@ -1,7 +1,6 @@
 package com.chinhbean.bookinghotel.entities;
 
 import com.chinhbean.bookinghotel.enums.BookingStatus;
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;

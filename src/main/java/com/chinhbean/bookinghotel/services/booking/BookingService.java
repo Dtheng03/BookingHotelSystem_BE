@@ -175,7 +175,8 @@ public class BookingService implements IBookingService {
         logger.info("Successfully retrieved all bookings.");
         return bookings.map(BookingResponse::fromBooking);
     }
-@Transactional
+
+    @Transactional
     @Override
     public Page<BookingResponse> getBookingsByHotel(Long hotelId, int page, int size) throws DataNotFoundException, PermissionDenyException {
         logger.info("Fetching bookings for hotel with ID: {}", hotelId);
@@ -201,6 +202,7 @@ public class BookingService implements IBookingService {
 
         return new PageImpl<>(bookingResponses, pageable, bookings.getTotalElements());
     }
+
     @Transactional
     @Override
     public Booking updateBooking(Long bookingId, BookingDTO bookingDTO) throws DataNotFoundException {
