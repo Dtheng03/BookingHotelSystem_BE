@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -71,11 +72,11 @@ public class PaymentService {
         long amount = Integer.parseInt(request.getAttribute("amount").toString()) * 100L;
         String bankCode = (String) request.getAttribute("bankCode");
         Long packageId = Long.parseLong(request.getAttribute("packageId").toString());
-
+        String userEmail = (String) request.getAttribute("userEmail");
         ServicePackage servicePackage = servicePackageRepository.findById(packageId)
                 .orElseThrow(() -> new IllegalArgumentException("Package with ID: " + packageId + " does not exist."));
 
-        Map<String, String> vnpParamsMap = vnPayConfig.getVNPayConfig(packageId.toString(), "Thanh toan goi dich vu: " + packageId);
+        Map<String, String> vnpParamsMap = vnPayConfig.getVNPayConfig(packageId.toString(), "Thanh toan goi dich vu: " + packageId + " cho user " + userEmail );
 
         vnpParamsMap.put("vnp_Amount", String.valueOf(amount));
         if (bankCode != null && !bankCode.isEmpty()) {
@@ -83,6 +84,7 @@ public class PaymentService {
         }
 
         vnpParamsMap.put("vnp_IpAddr", VNPayUtil.getIpAddress(request));
+
         String queryUrl = VNPayUtil.getPaymentURL(vnpParamsMap, true);
         String hashData = VNPayUtil.getPaymentURL(vnpParamsMap, false);
         queryUrl += "&vnp_SecureHash=" + VNPayUtil.hmacSHA512(vnPayConfig.getSecretKey(), hashData);
@@ -121,19 +123,21 @@ public class PaymentService {
     }
 
     @Transactional
-    public void updatePaymentTransactionStatusForPackage(String packageId, boolean isSuccess) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User currentUser = (User) authentication.getPrincipal();
+    public void updatePaymentTransactionStatusForPackage(String packageId, String email, boolean isSuccess) {
+        Optional<User> user = userRepository.findByEmail(email);
 
+        if (!user.isPresent()) {
+            throw new IllegalArgumentException("User with email: " + email + " does not exist.");
+        }
         if (isSuccess) {
-            currentUser.setStatus(PackageStatus.ACTIVE);
-            userRepository.save(currentUser);
+            user.get().setStatus(PackageStatus.ACTIVE);
+            userRepository.save(user.get());
         } else {
-            currentUser.setServicePackage(null);
-            currentUser.setPackageStartDate(null);
-            currentUser.setPackageEndDate(null);
-            currentUser.setStatus(PackageStatus.INACTIVE);
-            userRepository.save(currentUser);
+            user.get().setServicePackage(null);
+            user.get().setPackageStartDate(null);
+            user.get().setPackageEndDate(null);
+            user.get().setStatus(PackageStatus.INACTIVE);
+            userRepository.save(user.get());
         }
     }
 }
