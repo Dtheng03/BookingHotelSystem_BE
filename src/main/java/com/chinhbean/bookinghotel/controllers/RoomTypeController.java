@@ -52,7 +52,7 @@ public class RoomTypeController {
                     .status(HttpStatus.BAD_REQUEST)
                     .message(e.getMessage())
                     .build());
-        }catch (Exception e) {
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseObject.builder()
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .message(e.getMessage())

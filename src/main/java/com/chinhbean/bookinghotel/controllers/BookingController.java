@@ -9,6 +9,7 @@ import com.chinhbean.bookinghotel.responses.ResponseObject;
 import com.chinhbean.bookinghotel.responses.booking.BookingResponse;
 import com.chinhbean.bookinghotel.services.booking.IBookingService;
 import com.chinhbean.bookinghotel.utils.MessageKeys;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -19,6 +20,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -191,5 +193,9 @@ public class BookingController {
         }
     }
 
-
+    @GetMapping("/export/bookings")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
+    public void exportBookings(HttpServletResponse response) throws IOException {
+        bookingService.exportBookingsToExcel(response);
+    }
 }

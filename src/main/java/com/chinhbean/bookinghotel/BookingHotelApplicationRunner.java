@@ -2,7 +2,6 @@ package com.chinhbean.bookinghotel;
 
 import com.chinhbean.bookinghotel.entities.Role;
 import com.chinhbean.bookinghotel.entities.User;
-import com.chinhbean.bookinghotel.enums.PackageStatus;
 import com.chinhbean.bookinghotel.repositories.IRoleRepository;
 import com.chinhbean.bookinghotel.repositories.IUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +59,7 @@ public class BookingHotelApplicationRunner implements ApplicationRunner {
     private Boolean active;
 
     @Override
-    public void run(ApplicationArguments args) throws Exception {
+    public void run(ApplicationArguments args) {
         Optional<User> findAccountResult = IUserRepository.findByPhoneNumber(phoneNumber);
         Optional<Role> existRolePermission = IRoleRepository.findById((long) 1);
         Optional<User> findAccountGuest = IUserRepository.findByPhoneNumber(guestPhoneNumber);

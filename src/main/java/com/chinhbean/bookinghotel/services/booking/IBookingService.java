@@ -6,7 +6,10 @@ import com.chinhbean.bookinghotel.enums.BookingStatus;
 import com.chinhbean.bookinghotel.exceptions.DataNotFoundException;
 import com.chinhbean.bookinghotel.exceptions.PermissionDenyException;
 import com.chinhbean.bookinghotel.responses.booking.BookingResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.data.domain.Page;
+
+import java.io.IOException;
 
 public interface IBookingService {
 
@@ -23,7 +26,9 @@ public interface IBookingService {
     Page<BookingResponse> getBookingsByHotel(Long hotelId, int page, int size) throws DataNotFoundException, PermissionDenyException;
 
 
-     void sendMailNotificationForBookingPayment(Booking booking);
+    void sendMailNotificationForBookingPayment(Booking booking);
 
-     Booking getBookingById(Long bookingId) throws DataNotFoundException;
+    Booking getBookingById(Long bookingId) throws DataNotFoundException;
+
+    void exportBookingsToExcel(HttpServletResponse response) throws IOException;
 }

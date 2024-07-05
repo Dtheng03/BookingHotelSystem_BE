@@ -89,6 +89,13 @@ public class HotelService implements IHotelService {
                     return new DataNotFoundException(localizationUtils.getLocalizedMessage(MessageKeys.HOTEL_DOES_NOT_EXISTS));
                 });
 
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+
+        if (!currentUser.getId().equals(hotel.getPartner().getId()) && !currentUser.getRole().getRoleName().equals(Role.ADMIN)) {
+            throw new PermissionDenyException(localizationUtils.getLocalizedMessage(MessageKeys.USER_DOES_NOT_HAVE_PERMISSION_TO_VIEW_HOTEL));
+        }
+
         logger.info("Successfully retrieved details for hotel with ID: {}", hotelId);
         return HotelResponse.fromHotel(hotel);
     }
@@ -239,7 +246,7 @@ public class HotelService implements IHotelService {
     }
 
     @Override
-    public Page<HotelResponse> filterHotelsByConveniencesAndRating(Integer rating, Boolean freeBreakfast, Boolean pickUpDropOff, Boolean restaurant, Boolean bar, Boolean pool, Boolean freeInternet, Boolean reception24h, Boolean laundry, int page, int size) throws DataNotFoundException {
+    public Page<HotelResponse> filterHotelsByConveniencesAndRating(Integer rating, Boolean freeBreakfast, Boolean pickUpDropOff, Boolean restaurant, Boolean bar, Boolean pool, Boolean freeInternet, Boolean reception24h, Boolean laundry, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Hotel> hotels = hotelRepository.filterHotelWithConvenience(rating, freeBreakfast, pickUpDropOff, restaurant, bar, pool, freeInternet, reception24h, laundry, pageable);
         return hotels.map(HotelResponse::fromHotel);

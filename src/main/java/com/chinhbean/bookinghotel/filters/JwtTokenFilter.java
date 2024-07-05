@@ -80,8 +80,13 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 Pair.of(String.format("%s/room-types/get-all-room-status/**", apiPrefix), "GET"),
                 Pair.of(String.format("%s/bookings/create-booking", apiPrefix), "POST"),
                 Pair.of(String.format("%s/payment/**", apiPrefix), "GET"),
-                Pair.of(String.format("%s/users/oauth2/token", apiPrefix), "GET"),
                 Pair.of(String.format("%s/users/oauth2/facebook", apiPrefix), "POST"),
+                Pair.of(String.format("%s/users/oauth2/google", apiPrefix), "GET"),
+                Pair.of(String.format("%s/feedbacks/get-all-feedback/**", apiPrefix), "GET"),
+                Pair.of(String.format("%s/feedbacks/get-feedback/**", apiPrefix), "GET"),
+                Pair.of(String.format("%s/feedbacks/create-feedback", apiPrefix), "POST"),
+                Pair.of(String.format("%s/feedbacks/update-feedback/**", apiPrefix), "PUT"),
+                Pair.of(String.format("%s/feedbacks/delete-feedback/**", apiPrefix), "DELETE"),
                 Pair.of("/api-docs", "GET"),
                 Pair.of("/api-docs/**", "GET"),
                 Pair.of("/swagger-resources", "GET"),
@@ -91,7 +96,6 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 Pair.of("/swagger-ui/**", "GET"),
                 Pair.of("/swagger-ui.html", "GET"),
                 Pair.of("/swagger-ui/index.html", "GET")
-
         );
         String requestPath = request.getServletPath();
         String requestMethod = request.getMethod();

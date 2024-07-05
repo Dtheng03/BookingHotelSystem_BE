@@ -14,8 +14,7 @@ import java.time.LocalDate;
 
 @Repository
 public interface IHotelRepository extends JpaRepository<Hotel, Long>, JpaSpecificationExecutor<Hotel> {
-    @Query("SELECT h FROM Hotel h WHERE h.partner.id = :partnerId")
-    Page<Hotel> findHotelsByPartnerId(@Param("partnerId") Long partnerId, Pageable pageable);
+    Page<Hotel> findHotelsByPartnerId(Long partnerId, Pageable pageable);
 
     Page<Hotel> findAllByStatus(HotelStatus hotelStatus, Pageable pageable);
 

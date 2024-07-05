@@ -1,6 +1,5 @@
 package com.chinhbean.bookinghotel.services.booking;
 
-import com.chinhbean.bookinghotel.components.JwtTokenUtils;
 import com.chinhbean.bookinghotel.dtos.BookingDTO;
 import com.chinhbean.bookinghotel.dtos.BookingDetailDTO;
 import com.chinhbean.bookinghotel.dtos.DataMailDTO;
@@ -11,8 +10,10 @@ import com.chinhbean.bookinghotel.exceptions.PermissionDenyException;
 import com.chinhbean.bookinghotel.repositories.*;
 import com.chinhbean.bookinghotel.responses.booking.BookingResponse;
 import com.chinhbean.bookinghotel.services.sendmails.IMailService;
+import com.chinhbean.bookinghotel.utils.ExcelFileExporter;
 import com.chinhbean.bookinghotel.utils.MailTemplate;
 import com.chinhbean.bookinghotel.utils.MessageKeys;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.Hibernate;
@@ -28,6 +29,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -47,7 +49,6 @@ public class BookingService implements IBookingService {
 
     private final IBookingRepository bookingRepository;
     private final IUserRepository IUserRepository;
-    private final JwtTokenUtils jwtTokenUtils;
     private final IRoomTypeRepository roomTypeRepository;
     private final IBookingDetailRepository bookingDetailRepository;
     private final IHotelRepository hotelRepository;
@@ -57,9 +58,9 @@ public class BookingService implements IBookingService {
 
     @Transactional
     @Override
-    public BookingResponse createBooking(BookingDTO bookingDTO) throws Exception {
-        User user = null;
-        Booking booking = null;
+    public BookingResponse createBooking(BookingDTO bookingDTO) {
+        User user;
+        Booking booking;
 
         if (bookingDTO.getUserId() != null) {
             user = IUserRepository.findById(bookingDTO.getUserId())
@@ -159,7 +160,7 @@ public class BookingService implements IBookingService {
 
     @Transactional
     @Override
-    public Page<BookingResponse> getListBooking(int page, int size) throws DataNotFoundException, PermissionDenyException {
+    public Page<BookingResponse> getListBooking(int page, int size) throws DataNotFoundException {
         logger.info("Fetching all bookings from the database.");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
@@ -168,7 +169,7 @@ public class BookingService implements IBookingService {
 
         Page<Booking> bookings;
 
-        if(currentUser.getRole().getId() == 1){
+        if (currentUser.getRole().getId() == 1) {
             bookings = bookingRepository.findAll(pageable);
         } else {
             bookings = bookingRepository.findAllByUserId(currentUser.getId(), pageable);
@@ -182,9 +183,10 @@ public class BookingService implements IBookingService {
         logger.info("Successfully retrieved all bookings.");
         return bookings.map(BookingResponse::fromBooking);
     }
+
     @Transactional
     @Override
-    public Page<BookingResponse> getBookingsByHotel(Long hotelId, int page, int size) throws DataNotFoundException, PermissionDenyException {
+    public Page<BookingResponse> getBookingsByHotel(Long hotelId, int page, int size) throws DataNotFoundException {
         logger.info("Fetching bookings for hotel with ID: {}", hotelId);
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
@@ -331,4 +333,13 @@ public class BookingService implements IBookingService {
         return BookingResponse.fromBooking(booking);
     }
 
+    @Transactional
+    @Override
+    public void exportBookingsToExcel(HttpServletResponse response) throws IOException {
+        List<Booking> bookings = bookingRepository.findAll();
+        for (Booking booking : bookings) {
+            Hibernate.initialize(booking.getBookingDetails());
+        }
+        ExcelFileExporter.exportBookingsListToExcel(bookings, response);
+    }
 }
