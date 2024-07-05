@@ -26,23 +26,27 @@ public class PackageService implements IPackageService {
     private final ServicePackageRepository servicePackageRepository;
     private final IUserRepository userRepository;
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
     @Transactional
     @Override
     public List<ServicePackage> getAllPackages() {
         return servicePackageRepository.findAll();
     }
+
     @Transactional
     @Override
     public ServicePackage getPackageById(Long id) {
         return servicePackageRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Package with ID: " + id + " does not exist."));
     }
+
     @Transactional
     @Override
     public ServicePackage createPackage(ServicePackage servicePackage) {
         validatePackage(servicePackage);
         return servicePackageRepository.save(servicePackage);
     }
+
     @Transactional
     @Override
 
@@ -54,6 +58,7 @@ public class PackageService implements IPackageService {
         existingPackage.setDuration(updatedPackage.getDuration());
         return servicePackageRepository.save(existingPackage);
     }
+
     @Transactional
     @Override
     public void deletePackage(Long id) {
@@ -82,6 +87,7 @@ public class PackageService implements IPackageService {
             throw new IllegalArgumentException("Package duration must be at least 1 month");
         }
     }
+
     @Transactional
     @Override
 
@@ -128,6 +134,7 @@ public class PackageService implements IPackageService {
         }
         return CompletableFuture.completedFuture(null);
     }
+
     @Transactional
     @Override
     public boolean checkAndHandlePackageExpiration() {

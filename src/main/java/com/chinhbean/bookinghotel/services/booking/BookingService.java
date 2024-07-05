@@ -328,9 +328,13 @@ public class BookingService implements IBookingService {
         return BookingResponse.fromBooking(booking);
     }
 
+    @Transactional
     @Override
     public void exportBookingsToExcel(HttpServletResponse response) throws IOException {
         List<Booking> bookings = bookingRepository.findAll();
+        for (Booking booking : bookings) {
+            Hibernate.initialize(booking.getBookingDetails());
+        }
         ExcelFileExporter.exportBookingsListToExcel(bookings, response);
     }
 }
