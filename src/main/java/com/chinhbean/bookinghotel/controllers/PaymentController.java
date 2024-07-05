@@ -2,6 +2,7 @@ package com.chinhbean.bookinghotel.controllers;
 
 import com.chinhbean.bookinghotel.dtos.PaymentDTO;
 
+import com.chinhbean.bookinghotel.entities.ServicePackage;
 import com.chinhbean.bookinghotel.entities.User;
 import com.chinhbean.bookinghotel.repositories.IUserRepository;
 
@@ -10,6 +11,7 @@ import com.chinhbean.bookinghotel.exceptions.DataNotFoundException;
 
 import com.chinhbean.bookinghotel.responses.payment.PaymentResponse;
 import com.chinhbean.bookinghotel.services.booking.IBookingService;
+import com.chinhbean.bookinghotel.services.pack.IPackageService;
 import com.chinhbean.bookinghotel.services.payment.PaymentService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -29,6 +31,7 @@ public class PaymentController {
     private final PaymentService paymentService;
     private final IUserRepository userRepository;
     private final IBookingService bookingService;
+    private final IPackageService packageService;
     @GetMapping("/vn-pay")
     public PaymentResponse<PaymentDTO.VNPayResponse> pay(
             @RequestParam(required = false) String bookingId,
@@ -97,6 +100,8 @@ public class PaymentController {
                 }
             } else if (packageId != null) {
                 paymentService.updatePaymentTransactionStatusForPackage(packageId, email, true);
+                ServicePackage servicePackage = packageService.findPackageWithPaymentTransactionById(Long.parseLong(packageId));
+                packageService.sendMailNotificationForPackagePayment(servicePackage);
                 response.sendRedirect("http://localhost:3000/payment-return/success");
             } else {
                 // Handle unexpected case where neither bookingId nor packageId is present
