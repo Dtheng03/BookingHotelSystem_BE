@@ -70,6 +70,9 @@ public class Booking {
     @JoinColumn(name = "hotel_id", nullable = false)
     private Hotel hotel;
 
+    @OneToOne(mappedBy = "booking", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private PaymentTransaction paymentTransaction;
 }
 
 

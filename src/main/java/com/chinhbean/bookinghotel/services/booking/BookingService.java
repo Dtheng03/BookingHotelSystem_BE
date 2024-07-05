@@ -29,6 +29,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -211,11 +212,11 @@ public class BookingService implements IBookingService {
     public void sendMailNotificationForBookingPayment(Booking booking) {
         try {
             DataMailDTO dataMail = new DataMailDTO();
-            dataMail.setTo(booking.getUser().getEmail());
+            dataMail.setTo(booking.getPaymentTransaction().getEmailGuest());
             dataMail.setSubject(MailTemplate.SEND_MAIL_SUBJECT.BOOKING_PAYMENT_SUCCESS);
 
             Map<String, Object> props = new HashMap<>();
-            props.put("fullName", booking.getUser().getFullName());
+            props.put("fullName", booking.getPaymentTransaction().getNameGuest());
             props.put("checkInDate", booking.getCheckInDate());
             props.put("checkOutDate", booking.getCheckOutDate());
             props.put("totalPrice", booking.getTotalPrice());
@@ -223,7 +224,11 @@ public class BookingService implements IBookingService {
             props.put("note", booking.getNote());
             props.put("hotelName", booking.getHotel().getHotelName());
             props.put("bookingId", booking.getBookingId());
-            props.put("bookingDate", booking.getBookingDate());
+
+            // Format the booking date
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String formattedBookingDate = booking.getBookingDate().format(formatter);
+            props.put("bookingDate", formattedBookingDate);
 
             // Add room details
             if (!booking.getBookingDetails().isEmpty()) {
@@ -235,7 +240,7 @@ public class BookingService implements IBookingService {
 
             dataMail.setProps(props);
             mailService.sendHtmlMail(dataMail, MailTemplate.SEND_MAIL_TEMPLATE.BOOKING_PAYMENT_SUCCESS_TEMPLATE);
-            logger.info("Successfully sent booking payment success email to: {}", booking.getUser().getEmail());
+            logger.info("Successfully sent booking payment success email to: {}", booking.getPaymentTransaction().getEmailGuest());
         } catch (Exception exp) {
             logger.error("Failed to send booking payment success email", exp);
         }
@@ -244,7 +249,7 @@ public class BookingService implements IBookingService {
 
     @Override
     public Booking getBookingById(Long bookingId) throws DataNotFoundException {
-        return bookingRepository.findWithDetailsById(bookingId)
+        return bookingRepository.findWithDetailsAndPaymentTransactionById(bookingId)
                 .orElseThrow(() -> new DataNotFoundException(MessageKeys.NO_BOOKINGS_FOUND));
     }
 
