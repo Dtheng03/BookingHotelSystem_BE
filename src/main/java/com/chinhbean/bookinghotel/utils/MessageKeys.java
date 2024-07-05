@@ -6,6 +6,7 @@ public class MessageKeys {
     public static final String USERNAME_ALREADY_EXISTS = "user.register.user_already_exists";
 
     public static final String PHONE_NUMBER_ALREADY_EXISTS = "user.login.register.phone-number_already_exists";
+    public static final String EMAIL_ALREADY_EXISTS = "user.login.register.email_already_exists";
 
     public static final String LOGIN_SUCCESSFULLY = "user.login.login_successfully";
     public static final String REGISTER_SUCCESSFULLY = "user.login.register_successfully";
