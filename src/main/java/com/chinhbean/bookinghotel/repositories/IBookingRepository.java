@@ -25,8 +25,11 @@ public interface IBookingRepository extends JpaRepository<Booking, Long> {
     @Query("SELECT b FROM Booking b WHERE b.hotel.id = :hotelId AND b.hotel.partner.id = :partnerId")
     Page<Booking> findByHotel_IdAndHotel_Partner_Id(Long hotelId, Long partnerId, Pageable pageable);
 
-    @Query("SELECT b FROM Booking b LEFT JOIN FETCH b.bookingDetails bd WHERE b.bookingId = :bookingId")
-    Optional<Booking> findWithDetailsById(Long bookingId) throws DataNotFoundException;
+    @Query("SELECT b FROM Booking b " +
+            "LEFT JOIN FETCH b.bookingDetails bd " +
+            "LEFT JOIN FETCH b.paymentTransaction pt " +
+            "WHERE b.bookingId = :bookingId")
+    Optional<Booking> findWithDetailsAndPaymentTransactionById(Long bookingId) throws DataNotFoundException;
 
 
 }
