@@ -9,6 +9,8 @@ public class MailTemplate {
         public final static String NEW_PASSWORD = "YOUR NEW PASSWORD";
 
         public final static String BOOKING_PAYMENT_SUCCESS = "PAYMENT SUCCESSFUL!";
+
+        public final static String PACKAGE_PAYMENT_SUCCESS = "PAYMENT SUCCESSFUL!";
     }
 
     public final static class SEND_MAIL_TEMPLATE {
@@ -18,5 +20,7 @@ public class MailTemplate {
 
         public final static String NEW_PASSWORD = "new-password";
         public final static String BOOKING_PAYMENT_SUCCESS_TEMPLATE = "booking";
+
+        public final static String PACKAGE_PAYMENT_SUCCESS_TEMPLATE = "package";
     }
 }

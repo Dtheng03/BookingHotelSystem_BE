@@ -18,4 +18,8 @@ public interface IPackageService {
     void registerPackage(Long packageId);
 
     boolean checkAndHandlePackageExpiration();
+
+    void sendMailNotificationForPackagePayment(ServicePackage servicePackage);
+
+    ServicePackage findPackageWithPaymentTransactionById(Long packageId);
 }

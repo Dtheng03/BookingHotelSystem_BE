@@ -1,10 +1,14 @@
 package com.chinhbean.bookinghotel.services.pack;
 
+import com.chinhbean.bookinghotel.dtos.DataMailDTO;
+import com.chinhbean.bookinghotel.entities.BookingDetails;
 import com.chinhbean.bookinghotel.entities.ServicePackage;
 import com.chinhbean.bookinghotel.entities.User;
 import com.chinhbean.bookinghotel.enums.PackageStatus;
 import com.chinhbean.bookinghotel.repositories.IUserRepository;
 import com.chinhbean.bookinghotel.repositories.ServicePackageRepository;
+import com.chinhbean.bookinghotel.services.sendmails.IMailService;
+import com.chinhbean.bookinghotel.utils.MailTemplate;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
@@ -13,7 +17,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -25,6 +32,7 @@ public class PackageService implements IPackageService {
 
     private final ServicePackageRepository servicePackageRepository;
     private final IUserRepository userRepository;
+    private final IMailService mailService;
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     @Transactional
     @Override
@@ -147,5 +155,32 @@ public class PackageService implements IPackageService {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void sendMailNotificationForPackagePayment(ServicePackage servicePackage) {
+        try {
+            DataMailDTO dataMail = new DataMailDTO();
+            dataMail.setTo(servicePackage.getPaymentTransaction().getEmailGuest());
+            dataMail.setSubject(MailTemplate.SEND_MAIL_SUBJECT.PACKAGE_PAYMENT_SUCCESS);
+
+            Map<String, Object> props = new HashMap<>();
+            props.put("fullName", servicePackage.getPaymentTransaction().getNameGuest());
+            props.put("packageId", servicePackage.getId());
+            props.put("packagePrice", servicePackage.getPrice());
+            props.put("packageDuration", servicePackage.getDuration());
+            props.put("description", servicePackage.getDescription());
+            dataMail.setProps(props);
+            mailService.sendHtmlMail(dataMail, MailTemplate.SEND_MAIL_TEMPLATE.PACKAGE_PAYMENT_SUCCESS_TEMPLATE);
+            System.out.println("Email successfully sent to " + servicePackage.getPaymentTransaction().getEmailGuest());
+        } catch (Exception exp) {
+            exp.printStackTrace();
+        }
+    }
+
+    @Override
+    public ServicePackage findPackageWithPaymentTransactionById(Long packageId) {
+        return servicePackageRepository.findPackageWithPaymentTransactionById(packageId)
+                .orElseThrow(() -> new IllegalArgumentException("Package not found"));
     }
 }
