@@ -22,6 +22,8 @@ public interface IUserRepository extends JpaRepository<User, Long> {
 
     boolean existsByPhoneNumber(String phoneNumber);
 
+    boolean existsByEmail(String email);
+
     @Query("UPDATE User u SET u.avatar = ?2 WHERE u.id = ?1")
     @Transactional
     void updateAvatar(long id, MultipartFile avatar);

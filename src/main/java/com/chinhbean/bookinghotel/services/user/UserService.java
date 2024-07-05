@@ -74,6 +74,11 @@ public class UserService implements IUserService {
             throw new DataIntegrityViolationException(localizationUtils.getLocalizedMessage(MessageKeys.PHONE_NUMBER_ALREADY_EXISTS));
         }
 
+        String email = userDTO.getEmail();
+        if (IUserRepository.existsByEmail(email)) {
+            throw new DataIntegrityViolationException(localizationUtils.getLocalizedMessage(MessageKeys.EMAIL_ALREADY_EXISTS));
+        }
+
         // Sử dụng roleId mặc định là 2 nếu không được truyền vào
         Long roleId = userDTO.getRoleId() != null ? userDTO.getRoleId() : 3L;
         Role role = IRoleRepository.findById(roleId)
