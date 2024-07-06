@@ -5,16 +5,16 @@ import com.chinhbean.bookinghotel.enums.HotelStatus;
 import com.chinhbean.bookinghotel.enums.RoomTypeStatus;
 import com.chinhbean.bookinghotel.repositories.IHotelRepository;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Component
-public class HotelStatusUpdater {
+@Service
+public class HotelStatusScheduler {
 
     private final IHotelRepository hotelRepository;
 
-    public HotelStatusUpdater(IHotelRepository hotelRepository) {
+    public HotelStatusScheduler(IHotelRepository hotelRepository) {
         this.hotelRepository = hotelRepository;
     }
 

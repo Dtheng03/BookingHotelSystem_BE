@@ -7,6 +7,7 @@ import com.chinhbean.bookinghotel.enums.HotelStatus;
 import com.chinhbean.bookinghotel.exceptions.DataNotFoundException;
 import com.chinhbean.bookinghotel.exceptions.PermissionDenyException;
 import com.chinhbean.bookinghotel.responses.hotel.HotelResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +21,7 @@ public interface IHotelService {
 
     Page<HotelResponse> getPartnerHotels(int page, int size, User userDetails);
 
-    HotelResponse getHotelDetail(Long hotelId) throws DataNotFoundException, PermissionDenyException;
+    HotelResponse getHotelDetail(Long hotelId, HttpServletRequest request) throws DataNotFoundException, PermissionDenyException;
 
     HotelResponse createHotel(HotelDTO hotelDTO) throws DataNotFoundException, PermissionDenyException;
 

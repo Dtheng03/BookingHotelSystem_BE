@@ -85,9 +85,9 @@ public class HotelController {
     }
 
     @GetMapping("/detail/{hotelId}")
-    public ResponseEntity<ResponseObject> getHotelDetail(@PathVariable Long hotelId) {
+    public ResponseEntity<ResponseObject> getHotelDetail(@PathVariable Long hotelId, HttpServletRequest request) {
         try {
-            HotelResponse hotelDetail = hotelService.getHotelDetail(hotelId);
+            HotelResponse hotelDetail = hotelService.getHotelDetail(hotelId, request);
             return ResponseEntity.ok().body(ResponseObject.builder()
                     .status(HttpStatus.OK)
                     .data(hotelDetail)
@@ -101,7 +101,7 @@ public class HotelController {
         } catch (PermissionDenyException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ResponseObject.builder()
                     .status(HttpStatus.FORBIDDEN)
-                    .message(MessageKeys.USER_DOES_NOT_HAVE_PERMISSION_TO_VIEW_HOTEL)
+                    .message(e.getMessage())
                     .build());
         }
     }

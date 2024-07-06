@@ -1,7 +1,7 @@
 package com.chinhbean.bookinghotel.enums;
 
 public enum BookingStatus {
-    PENDING, CONFIRMED, PAID, CHECKED_ID, CHECKED_OUT, CANCELLED
+    PENDING, CONFIRMED, PAID, CHECKED_IN, CHECKED_OUT, CANCELLED
     //PENDING: Đặt phòng đã được tạo nhưng chưa được xác nhận hoặc thanh toán.
     //CONFIRMED: Đặt phòng đã được xác nhận bởi nhà cung cấp dịch vụ.
     //PAID: Đặt phòng đã được thanh toán.
