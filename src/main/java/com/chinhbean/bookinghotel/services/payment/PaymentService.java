@@ -10,8 +10,6 @@ import com.chinhbean.bookinghotel.utils.VNPayUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -76,7 +74,7 @@ public class PaymentService {
         ServicePackage servicePackage = servicePackageRepository.findById(packageId)
                 .orElseThrow(() -> new IllegalArgumentException("Package with ID: " + packageId + " does not exist."));
 
-        Map<String, String> vnpParamsMap = vnPayConfig.getVNPayConfig(packageId.toString(), "Thanh toan goi dich vu: " + packageId + " cho user " + userEmail );
+        Map<String, String> vnpParamsMap = vnPayConfig.getVNPayConfig(packageId.toString(), "Thanh toan goi dich vu: " + packageId + " cho user " + userEmail);
 
         vnpParamsMap.put("vnp_Amount", String.valueOf(amount));
         if (bankCode != null && !bankCode.isEmpty()) {
