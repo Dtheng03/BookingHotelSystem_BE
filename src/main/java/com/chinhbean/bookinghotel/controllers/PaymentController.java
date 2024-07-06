@@ -1,21 +1,23 @@
 package com.chinhbean.bookinghotel.controllers;
 
 import com.chinhbean.bookinghotel.dtos.PaymentDTO;
-import com.chinhbean.bookinghotel.entities.Booking;
+
+import com.chinhbean.bookinghotel.entities.ServicePackage;
 import com.chinhbean.bookinghotel.entities.User;
-import com.chinhbean.bookinghotel.exceptions.DataNotFoundException;
 import com.chinhbean.bookinghotel.repositories.IUserRepository;
+
+import com.chinhbean.bookinghotel.entities.Booking;
+import com.chinhbean.bookinghotel.exceptions.DataNotFoundException;
+
 import com.chinhbean.bookinghotel.responses.payment.PaymentResponse;
 import com.chinhbean.bookinghotel.services.booking.IBookingService;
+import com.chinhbean.bookinghotel.services.pack.IPackageService;
 import com.chinhbean.bookinghotel.services.payment.PaymentService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -29,7 +31,7 @@ public class PaymentController {
     private final PaymentService paymentService;
     private final IUserRepository userRepository;
     private final IBookingService bookingService;
-
+    private final IPackageService packageService;
     @GetMapping("/vn-pay")
     public PaymentResponse<PaymentDTO.VNPayResponse> pay(
             @RequestParam(required = false) String bookingId,
@@ -54,7 +56,7 @@ public class PaymentController {
             return new PaymentResponse<>(HttpStatus.OK, "Success", paymentService.createVnPayPaymentForBooking(request));
         } else if (packageId != null) {
             request.setAttribute("packageId", packageId);
-            if (user.isPresent()) {
+            if(user.isPresent()) {
                 request.setAttribute("userEmail", user.get().getEmail());
             }
             return new PaymentResponse<>(HttpStatus.OK, "Success", paymentService.createVnPayPaymentForPackage(request));
@@ -98,6 +100,8 @@ public class PaymentController {
                 }
             } else if (packageId != null) {
                 paymentService.updatePaymentTransactionStatusForPackage(packageId, email, true);
+                ServicePackage servicePackage = packageService.findPackageWithPaymentTransactionById(Long.parseLong(packageId));
+                packageService.sendMailNotificationForPackagePayment(servicePackage);
                 response.sendRedirect("http://localhost:3000/payment-return/success");
             } else {
                 // Handle unexpected case where neither bookingId nor packageId is present
