@@ -20,7 +20,7 @@ public class RoomType {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL) // Sử dụng LAZY để trì hoãn tải
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL) // Sử dụng LAZY để trì hoãn tải
     @JoinColumn(name = "type_id", nullable = false)
     private Type type;
 
