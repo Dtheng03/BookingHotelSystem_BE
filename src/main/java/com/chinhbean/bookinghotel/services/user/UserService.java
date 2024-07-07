@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -115,37 +116,26 @@ public class UserService implements IUserService {
 
     @Override
     public String login(UserLoginDTO userLoginDTO) throws Exception {
-        Optional<User> optionalUser;
-//        String subject = null;
-        String subject = userLoginDTO.getLoginIdentifier();
-
-        if (subject.contains("@")) {
-            optionalUser = IUserRepository.findByEmail(subject);
-        } else {
-            optionalUser = IUserRepository.findByPhoneNumber(subject);
-        }
-
-        if (optionalUser.isEmpty()) {
-            throw new DataNotFoundException(localizationUtils.getLocalizedMessage(MessageKeys.USER_NOT_FOUND));
-        }
-        User existingUser = optionalUser.get();
-
-        if (existingUser.getFacebookAccountId() == null && existingUser.getGoogleAccountId() == null) {
+        String loginIdentifier = userLoginDTO.getLoginIdentifier();
+        try {
+            User existingUser = IUserRepository.findByEmailOrPhoneNumber(loginIdentifier, loginIdentifier)
+                    .orElseThrow(() -> new DataNotFoundException(localizationUtils.getLocalizedMessage(MessageKeys.USER_NOT_FOUND)));
             if (!passwordEncoder.matches(userLoginDTO.getPassword(), existingUser.getPassword())) {
                 throw new BadCredentialsException(localizationUtils.getLocalizedMessage(MessageKeys.WRONG_PHONE_PASSWORD));
             }
-        }
-        if (!existingUser.isActive()) {
-            throw new DataNotFoundException(localizationUtils.getLocalizedMessage(MessageKeys.USER_IS_LOCKED));
-        }
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                subject, userLoginDTO.getPassword(),
-                existingUser.getAuthorities()
-        );
 
-        // authenticate with Java Spring security
-        authenticationManager.authenticate(authenticationToken);
-        return jwtTokenUtils.generateToken(existingUser);
+            if (!existingUser.isActive()) {
+                throw new DataNotFoundException(localizationUtils.getLocalizedMessage(MessageKeys.USER_IS_LOCKED));
+            }
+
+            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+                    loginIdentifier, userLoginDTO.getPassword(), existingUser.getAuthorities());
+
+            authenticationManager.authenticate(authenticationToken);
+            return jwtTokenUtils.generateToken(existingUser);
+        } catch (IncorrectResultSizeDataAccessException e) {
+            throw new DataIntegrityViolationException("Multiple users found with the same identifier: " + loginIdentifier);
+        }
     }
 
     @Override
@@ -161,18 +151,23 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public User getUserDetailsFromToken(String token) throws Exception {
+    public User getUserDetailsFromToken(String token) throws DataNotFoundException {
         if (jwtTokenUtils.isTokenExpired(token)) {
             throw new DataNotFoundException("Token is expired");
         }
-        String phoneNumber = jwtTokenUtils.extractPhoneNumber(token);
-        Optional<User> user = IUserRepository.findByPhoneNumber(phoneNumber);
 
-        if (user.isPresent()) {
-            return user.get();
-        } else {
-            throw new Exception("User not found");
+        String identifier = jwtTokenUtils.extractIdentifier(token);
+        if (identifier == null || identifier.isEmpty()) {
+            logger.error("Identifier extracted from token is null or empty");
+            throw new DataNotFoundException("Identifier not found in token");
         }
+
+        Optional<User> user = IUserRepository.findByEmailOrPhoneNumber(identifier, identifier);
+
+        return user.orElseThrow(() -> {
+            logger.error("User not found for identifier: {}", identifier);
+            return new DataNotFoundException("User not found");
+        });
     }
 
     @Override
@@ -304,5 +299,4 @@ public class UserService implements IUserService {
         List<User> users = IUserRepository.findByRoleId(roleId);
         return users.stream().map(UserResponse::fromUser).toList();
     }
-
 }

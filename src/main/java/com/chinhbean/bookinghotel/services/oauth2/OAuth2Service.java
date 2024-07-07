@@ -1,20 +1,36 @@
 package com.chinhbean.bookinghotel.services.oauth2;
 
+import com.chinhbean.bookinghotel.components.JwtTokenUtils;
 import com.chinhbean.bookinghotel.dtos.DataMailDTO;
 import com.chinhbean.bookinghotel.entities.Role;
+import com.chinhbean.bookinghotel.entities.Token;
 import com.chinhbean.bookinghotel.entities.User;
 import com.chinhbean.bookinghotel.repositories.IRoleRepository;
 import com.chinhbean.bookinghotel.repositories.IUserRepository;
+import com.chinhbean.bookinghotel.responses.user.LoginResponse;
 import com.chinhbean.bookinghotel.services.sendmails.MailService;
+import com.chinhbean.bookinghotel.services.token.ITokenService;
 import com.chinhbean.bookinghotel.utils.MailTemplate;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.gson.GsonFactory;
 import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -26,35 +42,87 @@ public class OAuth2Service implements IOAuth2Service {
     private final IRoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final MailService mailService;
+    private final JwtTokenUtils jwtTokenUtils;
+    private final ITokenService tokenService;
     private static final Logger logger = LoggerFactory.getLogger(OAuth2Service.class);
+
+    @Value("${spring.security.oauth2.client.registration.google.client-id}")
+    private String googleClientId;
 
     @Transactional
     @Override
-    public User processGoogleUser(String email, String name, String googleId) {
-        return userRepository.findByEmail(email)
-                .map(this::updateGoogleUser)
-                .orElseGet(() -> createOAuth2User(email, name, googleId, true));
+    public LoginResponse handleFacebookLogin(String accessToken, HttpServletRequest request) throws Exception {
+        String facebookGraphApiUrl = "https://graph.facebook.com/me?fields=id,name,email&access_token=" + accessToken;
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                facebookGraphApiUrl,
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<>() {
+                }
+        );
+
+        Map<String, Object> userAttributes = response.getBody();
+
+        if (userAttributes != null && userAttributes.containsKey("id")) {
+            String facebookId = (String) userAttributes.get("id");
+            String email = (String) userAttributes.get("email");
+            String name = (String) userAttributes.get("name");
+
+            User user = processFacebookUser(email, name, facebookId);
+
+            return generateLoginResponse(user, request, "Facebook login successful");
+        } else {
+            throw new Exception("Invalid Facebook access token");
+        }
     }
 
     @Transactional
     @Override
+    public LoginResponse handleGoogleLogin(String token, HttpServletRequest request) throws Exception {
+        GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory())
+                .setAudience(Collections.singletonList(googleClientId))
+                .build();
+
+        GoogleIdToken idToken = verifier.verify(token);
+
+        if (idToken != null) {
+            GoogleIdToken.Payload payload = idToken.getPayload();
+            String email = payload.getEmail();
+            String name = (String) payload.get("name");
+            String googleId = payload.getSubject();
+
+            User user = processGoogleUser(email, name, googleId);
+
+            return generateLoginResponse(user, request, "Google login successful");
+        } else {
+            throw new Exception("Invalid ID token");
+        }
+    }
+
     public User processFacebookUser(String email, String name, String facebookId) {
         return userRepository.findByEmail(email)
                 .map(this::updateFacebookUser)
                 .orElseGet(() -> createOAuth2User(email, name, facebookId, false));
     }
 
-    private User updateGoogleUser(User user) {
-        if (user.getGoogleAccountId() == null) {
-            user.setGoogleAccountId(user.getEmail());
-            return userRepository.save(user);
-        }
-        return user;
+    public User processGoogleUser(String email, String name, String googleId) {
+        return userRepository.findByEmail(email)
+                .map(this::updateGoogleUser)
+                .orElseGet(() -> createOAuth2User(email, name, googleId, true));
     }
 
     private User updateFacebookUser(User user) {
         if (user.getFacebookAccountId() == null) {
             user.setFacebookAccountId(user.getEmail());
+            return userRepository.save(user);
+        }
+        return user;
+    }
+
+    private User updateGoogleUser(User user) {
+        if (user.getGoogleAccountId() == null) {
+            user.setGoogleAccountId(user.getEmail());
             return userRepository.save(user);
         }
         return user;
@@ -81,6 +149,27 @@ public class OAuth2Service implements IOAuth2Service {
         return savedUser;
     }
 
+    private LoginResponse generateLoginResponse(User user, HttpServletRequest request, String message) {
+        String userAgent = request.getHeader("User-Agent");
+        String jwtToken = jwtTokenUtils.generateToken(user);
+        Token savedToken = tokenService.addToken(user, jwtToken, isMobileDevice(userAgent));
+
+        return LoginResponse.builder()
+                .message(message)
+                .token(savedToken.getToken())
+                .tokenType(savedToken.getTokenType())
+                .refreshToken(savedToken.getRefreshToken())
+                .fullName(user.getFullName())
+                .email(user.getEmail())
+                .phoneNumber(user.getPhoneNumber())
+                .roles(user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList())
+                .id(user.getId())
+                .build();
+    }
+
+    private boolean isMobileDevice(String userAgent) {
+        return userAgent != null && userAgent.toLowerCase().contains("mobile");
+    }
 
     private void sendPasswordEmail(String email, String password, String name) {
         Map<String, Object> props = new HashMap<>();
