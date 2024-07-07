@@ -1,7 +1,6 @@
 package com.chinhbean.bookinghotel.services.pack;
 
 import com.chinhbean.bookinghotel.dtos.DataMailDTO;
-import com.chinhbean.bookinghotel.entities.BookingDetails;
 import com.chinhbean.bookinghotel.entities.ServicePackage;
 import com.chinhbean.bookinghotel.entities.User;
 import com.chinhbean.bookinghotel.enums.PackageStatus;
@@ -17,7 +16,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

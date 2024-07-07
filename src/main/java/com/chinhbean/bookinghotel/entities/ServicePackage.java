@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
-import javax.annotation.Nullable;
-
 @Entity
 @Table(name = "packages")
 @Getter

@@ -96,26 +96,15 @@ public class JwtTokenUtils {
         return extractClaim(token, Claims::getSubject);
     }
 
-    public Long extractUserId(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(getSignInKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-        return Long.parseLong(claims.get("userId").toString());
+    public String extractIdentifier(String token) {
+        Claims claims = extractAllClaims(token);
+        String email = claims.get("email", String.class);
+        String phoneNumber = claims.get("phoneNumber", String.class);
+        return (email != null && !email.isEmpty()) ? email : phoneNumber;
     }
 
     public String extractEmail(String token) {
         return extractClaim(token, claims -> claims.get("email", String.class));
-    }
-
-    public String extractUserRole(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(getSignInKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-        return claims.get("role", String.class);
     }
 
     public boolean validateToken(String token, UserDetails userDetails) {
