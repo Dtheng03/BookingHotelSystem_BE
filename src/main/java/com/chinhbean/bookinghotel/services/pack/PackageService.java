@@ -74,12 +74,12 @@ public class PackageService implements IPackageService {
             throw new IllegalArgumentException("Package duration must be greater than 0");
         }
 
-        if (servicePackage.getDuration() > 12) {
-            throw new IllegalArgumentException("Package duration cannot exceed 12 months");
+        if (servicePackage.getDuration() > 365) {
+            throw new IllegalArgumentException("Package duration cannot exceed 365 months");
         }
 
-        if (servicePackage.getDuration() < 1) {
-            throw new IllegalArgumentException("Package duration must be at least 1 month");
+        if (servicePackage.getDuration() < 30) {
+            throw new IllegalArgumentException("Package duration must be at least 30 month");
         }
     }
     @Transactional
