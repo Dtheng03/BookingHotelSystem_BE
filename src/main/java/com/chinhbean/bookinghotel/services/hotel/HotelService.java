@@ -1,5 +1,6 @@
 package com.chinhbean.bookinghotel.services.hotel;
 
+import com.chinhbean.bookinghotel.components.JwtTokenUtils;
 import com.chinhbean.bookinghotel.components.LocalizationUtils;
 import com.chinhbean.bookinghotel.dtos.ConvenienceDTO;
 import com.chinhbean.bookinghotel.dtos.HotelDTO;
@@ -10,8 +11,10 @@ import com.chinhbean.bookinghotel.exceptions.DataNotFoundException;
 import com.chinhbean.bookinghotel.exceptions.PermissionDenyException;
 import com.chinhbean.bookinghotel.repositories.IConvenienceRepository;
 import com.chinhbean.bookinghotel.repositories.IHotelRepository;
+import com.chinhbean.bookinghotel.repositories.IUserRepository;
 import com.chinhbean.bookinghotel.responses.hotel.HotelResponse;
 import com.chinhbean.bookinghotel.utils.MessageKeys;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -21,6 +24,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -34,6 +39,9 @@ public class HotelService implements IHotelService {
     private final IHotelRepository hotelRepository;
     private final LocalizationUtils localizationUtils;
     private final IConvenienceRepository convenienceRepository;
+    private final IUserRepository userRepository;
+    private final JwtTokenUtils jwtTokenUtils;
+    private final UserDetailsService userDetailsService;
     private static final Logger logger = LoggerFactory.getLogger(HotelService.class);
 
     @Transactional
@@ -81,13 +89,22 @@ public class HotelService implements IHotelService {
 
     @Transactional
     @Override
-    public HotelResponse getHotelDetail(Long hotelId) throws DataNotFoundException, PermissionDenyException {
+    public HotelResponse getHotelDetail(Long hotelId, HttpServletRequest request) throws DataNotFoundException, PermissionDenyException {
         logger.info("Fetching details for hotel with ID: {}", hotelId);
         Hotel hotel = hotelRepository.findById(hotelId)
                 .orElseThrow(() -> {
                     logger.error("Hotel with ID: {} does not exist.", hotelId);
-                    return new DataNotFoundException(localizationUtils.getLocalizedMessage(MessageKeys.HOTEL_DOES_NOT_EXISTS));
+                    return new DataNotFoundException(MessageKeys.HOTEL_DOES_NOT_EXISTS);
                 });
+
+        User currentUser = getCurrentUser(request);
+        if (currentUser == null) {
+            throw new PermissionDenyException(MessageKeys.USER_NOT_FOUND);
+        }
+
+        if (!currentUser.getId().equals(hotel.getPartner().getId()) && currentUser.getRole().getId() != 1) {
+            throw new PermissionDenyException(MessageKeys.USER_DOES_NOT_HAVE_PERMISSION_TO_VIEW_HOTEL);
+        }
 
         logger.info("Successfully retrieved details for hotel with ID: {}", hotelId);
         return HotelResponse.fromHotel(hotel);
@@ -239,7 +256,7 @@ public class HotelService implements IHotelService {
     }
 
     @Override
-    public Page<HotelResponse> filterHotelsByConveniencesAndRating(Integer rating, Boolean freeBreakfast, Boolean pickUpDropOff, Boolean restaurant, Boolean bar, Boolean pool, Boolean freeInternet, Boolean reception24h, Boolean laundry, int page, int size) throws DataNotFoundException {
+    public Page<HotelResponse> filterHotelsByConveniencesAndRating(Integer rating, Boolean freeBreakfast, Boolean pickUpDropOff, Boolean restaurant, Boolean bar, Boolean pool, Boolean freeInternet, Boolean reception24h, Boolean laundry, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Hotel> hotels = hotelRepository.filterHotelWithConvenience(rating, freeBreakfast, pickUpDropOff, restaurant, bar, pool, freeInternet, reception24h, laundry, pageable);
         return hotels.map(HotelResponse::fromHotel);
@@ -251,5 +268,22 @@ public class HotelService implements IHotelService {
             throw new DataNotFoundException(localizationUtils.getLocalizedMessage(MessageKeys.HOTEL_DOES_NOT_EXISTS, hotelId));
         }
         hotelRepository.deleteById(hotelId);
+    }
+
+    private User getCurrentUser(HttpServletRequest request) throws PermissionDenyException {
+        final String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new PermissionDenyException(MessageKeys.AUTH_TOKEN_MISSING_OR_INVALID);
+        }
+        final String token = authHeader.substring(7);
+        final String phoneNumber = jwtTokenUtils.extractPhoneNumber(token);
+        if (phoneNumber == null) {
+            throw new PermissionDenyException(MessageKeys.TOKEN_NO_PHONE_NUMBER);
+        }
+        try {
+            return (User) userDetailsService.loadUserByUsername(phoneNumber);
+        } catch (UsernameNotFoundException e) {
+            throw new PermissionDenyException(MessageKeys.USER_NOT_FOUND);
+        }
     }
 }

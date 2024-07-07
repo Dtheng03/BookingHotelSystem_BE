@@ -25,7 +25,7 @@ public class PaymentTransaction {
 
     @OneToOne
     @JoinColumn(name = "package_id")
-    @JsonBackReference
+    @JsonBackReference("service-package-payment")
     private ServicePackage servicePackage;
 
     @Column(nullable = false)

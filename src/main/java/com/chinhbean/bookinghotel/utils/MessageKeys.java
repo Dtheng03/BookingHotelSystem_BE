@@ -91,4 +91,7 @@ public class MessageKeys {
     public static final String USER_DOES_NOT_HAVE_PERMISSION_TO_UPDATE_HOTEL = "hotel.update_hotel.USER_DOES_NOT_HAVE_PERMISSION_TO_UPDATE_HOTEL";
     public static final String INVALID_DATE_FORMAT = "invalid.date.format";
     public static final String USER_DOES_NOT_HAVE_PERMISSION_TO_VIEW_HOTEL = "hotel.list_hotel.USER_DOES_NOT_HAVE_PERMISSION_TO_VIEW_HOTEL";
+    public static final String FEEDBACK_DOES_NOT_EXISTS = "feedback.feedback_does_not_exists";
+    public static final String AUTH_TOKEN_MISSING_OR_INVALID = "auth.token_missing_or_invalid";
+    public static final String TOKEN_NO_PHONE_NUMBER = "auth.token_no_phone_number";
 }

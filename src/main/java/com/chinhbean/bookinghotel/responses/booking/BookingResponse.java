@@ -69,9 +69,6 @@ public class BookingResponse {
     private String hotelName;
 
 
-
-
-
     public static BookingResponse fromBooking(Booking booking) {
         UserResponse userResponse = UserResponse.fromUser(booking.getUser());
 
