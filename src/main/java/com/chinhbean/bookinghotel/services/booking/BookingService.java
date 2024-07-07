@@ -30,12 +30,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -217,11 +215,12 @@ public class BookingService implements IBookingService {
             dataMail.setTo(booking.getPaymentTransaction().getEmailGuest());
             dataMail.setSubject(MailTemplate.SEND_MAIL_SUBJECT.BOOKING_PAYMENT_SUCCESS);
 
+            NumberFormat currencyFormatter = NumberFormat.getInstance(new Locale("vi", "VN"));
             Map<String, Object> props = new HashMap<>();
             props.put("fullName", booking.getPaymentTransaction().getNameGuest());
             props.put("checkInDate", booking.getCheckInDate());
             props.put("checkOutDate", booking.getCheckOutDate());
-            props.put("totalPrice", booking.getTotalPrice());
+            props.put("totalPrice", currencyFormatter.format(booking.getTotalPrice()));
             props.put("paymentMethod", booking.getPaymentMethod());
             props.put("note", booking.getNote());
             props.put("hotelName", booking.getHotel().getHotelName());
@@ -237,7 +236,7 @@ public class BookingService implements IBookingService {
                 BookingDetails bookingDetail = booking.getBookingDetails().get(0); // Assuming there's at least one booking detail
                 props.put("roomTypeName", bookingDetail.getRoomType().getRoomTypeName());
                 props.put("numberOfRooms", bookingDetail.getNumberOfRooms());
-                props.put("pricePerRoom", bookingDetail.getPrice());
+                props.put("pricePerRoom", currencyFormatter.format(bookingDetail.getPrice()));
             }
 
             dataMail.setProps(props);

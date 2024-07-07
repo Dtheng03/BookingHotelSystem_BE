@@ -1,7 +1,6 @@
 package com.chinhbean.bookinghotel.services.pack;
 
 import com.chinhbean.bookinghotel.dtos.DataMailDTO;
-import com.chinhbean.bookinghotel.entities.BookingDetails;
 import com.chinhbean.bookinghotel.entities.ServicePackage;
 import com.chinhbean.bookinghotel.entities.User;
 import com.chinhbean.bookinghotel.enums.PackageStatus;
@@ -16,10 +15,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.text.NumberFormat;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
@@ -171,10 +171,11 @@ public class PackageService implements IPackageService {
             dataMail.setTo(servicePackage.getPaymentTransaction().getEmailGuest());
             dataMail.setSubject(MailTemplate.SEND_MAIL_SUBJECT.PACKAGE_PAYMENT_SUCCESS);
 
+            NumberFormat currencyFormatter = NumberFormat.getInstance(new Locale("vi", "VN"));
             Map<String, Object> props = new HashMap<>();
             props.put("fullName", servicePackage.getPaymentTransaction().getNameGuest());
             props.put("packageId", servicePackage.getId());
-            props.put("packagePrice", servicePackage.getPrice());
+            props.put("packagePrice", currencyFormatter.format(servicePackage.getPrice()));
             props.put("packageDuration", servicePackage.getDuration());
             props.put("description", servicePackage.getDescription());
             dataMail.setProps(props);

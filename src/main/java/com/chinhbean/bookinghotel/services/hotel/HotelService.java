@@ -11,7 +11,6 @@ import com.chinhbean.bookinghotel.exceptions.DataNotFoundException;
 import com.chinhbean.bookinghotel.exceptions.PermissionDenyException;
 import com.chinhbean.bookinghotel.repositories.IConvenienceRepository;
 import com.chinhbean.bookinghotel.repositories.IHotelRepository;
-import com.chinhbean.bookinghotel.repositories.IUserRepository;
 import com.chinhbean.bookinghotel.responses.hotel.HotelResponse;
 import com.chinhbean.bookinghotel.utils.MessageKeys;
 import jakarta.servlet.http.HttpServletRequest;
@@ -39,7 +38,6 @@ public class HotelService implements IHotelService {
     private final IHotelRepository hotelRepository;
     private final LocalizationUtils localizationUtils;
     private final IConvenienceRepository convenienceRepository;
-    private final IUserRepository userRepository;
     private final JwtTokenUtils jwtTokenUtils;
     private final UserDetailsService userDetailsService;
     private static final Logger logger = LoggerFactory.getLogger(HotelService.class);
@@ -97,13 +95,27 @@ public class HotelService implements IHotelService {
                     return new DataNotFoundException(MessageKeys.HOTEL_DOES_NOT_EXISTS);
                 });
 
-        User currentUser = getCurrentUser(request);
-        if (currentUser == null) {
-            throw new PermissionDenyException(MessageKeys.USER_NOT_FOUND);
+        User currentUser = null;
+        try {
+            currentUser = getCurrentUser(request);
+        } catch (Exception e) {
+            logger.info("Unauthenticated access to hotel details with ID: {}", hotelId);
         }
 
-        if (!currentUser.getId().equals(hotel.getPartner().getId()) && currentUser.getRole().getId() != 1) {
-            throw new PermissionDenyException(MessageKeys.USER_DOES_NOT_HAVE_PERMISSION_TO_VIEW_HOTEL);
+        if (!HotelStatus.ACTIVE.equals(hotel.getStatus())) {
+            if (currentUser == null ||
+                    (!currentUser.getId().equals(hotel.getPartner().getId()) &&
+                            currentUser.getRole().getId() != 1)) {
+                logger.warn("Attempt to access inactive hotel with ID: {} by unauthorized user", hotelId);
+                throw new DataNotFoundException(MessageKeys.HOTEL_DOES_NOT_EXISTS);
+            }
+        } else {
+            if (currentUser != null &&
+                    currentUser.getRole().getRoleName().equalsIgnoreCase("PARTNER") &&
+                    !currentUser.getId().equals(hotel.getPartner().getId()) && currentUser.getRole().getId() != 1) {
+                logger.warn("Partner attempted to access another partner's hotel. Hotel ID: {}, User ID: {}", hotelId, currentUser.getId());
+                throw new PermissionDenyException(MessageKeys.PARTNER_CANNOT_VIEW_OTHER_HOTELS);
+            }
         }
 
         logger.info("Successfully retrieved details for hotel with ID: {}", hotelId);
@@ -276,12 +288,12 @@ public class HotelService implements IHotelService {
             throw new PermissionDenyException(MessageKeys.AUTH_TOKEN_MISSING_OR_INVALID);
         }
         final String token = authHeader.substring(7);
-        final String phoneNumber = jwtTokenUtils.extractPhoneNumber(token);
-        if (phoneNumber == null) {
-            throw new PermissionDenyException(MessageKeys.TOKEN_NO_PHONE_NUMBER);
+        final String userIdentifier = jwtTokenUtils.extractIdentifier(token);
+        if (userIdentifier == null) {
+            throw new PermissionDenyException(MessageKeys.TOKEN_NO_IDENTIFIER);
         }
         try {
-            return (User) userDetailsService.loadUserByUsername(phoneNumber);
+            return (User) userDetailsService.loadUserByUsername(userIdentifier);
         } catch (UsernameNotFoundException e) {
             throw new PermissionDenyException(MessageKeys.USER_NOT_FOUND);
         }

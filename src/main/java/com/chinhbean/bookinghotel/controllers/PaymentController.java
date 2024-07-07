@@ -1,14 +1,11 @@
 package com.chinhbean.bookinghotel.controllers;
 
 import com.chinhbean.bookinghotel.dtos.PaymentDTO;
-
+import com.chinhbean.bookinghotel.entities.Booking;
 import com.chinhbean.bookinghotel.entities.ServicePackage;
 import com.chinhbean.bookinghotel.entities.User;
-import com.chinhbean.bookinghotel.repositories.IUserRepository;
-
-import com.chinhbean.bookinghotel.entities.Booking;
 import com.chinhbean.bookinghotel.exceptions.DataNotFoundException;
-
+import com.chinhbean.bookinghotel.repositories.IUserRepository;
 import com.chinhbean.bookinghotel.responses.payment.PaymentResponse;
 import com.chinhbean.bookinghotel.services.booking.IBookingService;
 import com.chinhbean.bookinghotel.services.pack.IPackageService;
@@ -17,7 +14,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -32,6 +32,7 @@ public class PaymentController {
     private final IUserRepository userRepository;
     private final IBookingService bookingService;
     private final IPackageService packageService;
+
     @GetMapping("/vn-pay")
     public PaymentResponse<PaymentDTO.VNPayResponse> pay(
             @RequestParam(required = false) String bookingId,
@@ -56,9 +57,7 @@ public class PaymentController {
             return new PaymentResponse<>(HttpStatus.OK, "Success", paymentService.createVnPayPaymentForBooking(request));
         } else if (packageId != null) {
             request.setAttribute("packageId", packageId);
-            if(user.isPresent()) {
-                request.setAttribute("userEmail", user.get().getEmail());
-            }
+            user.ifPresent(value -> request.setAttribute("userEmail", value.getEmail()));
             return new PaymentResponse<>(HttpStatus.OK, "Success", paymentService.createVnPayPaymentForPackage(request));
         } else {
             throw new IllegalArgumentException("Either bookingId or packageId must be provided");
@@ -68,7 +67,7 @@ public class PaymentController {
     @GetMapping("/vn-pay-callback")
     public void payCallbackHandler(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String status = request.getParameter("vnp_ResponseCode");
-        String paymentId = request.getParameter("vnp_TxnRef");
+        request.getParameter("vnp_TxnRef");
         String bookingId = null;
         String packageId = null;
         String orderInfo = request.getParameter("vnp_OrderInfo");
