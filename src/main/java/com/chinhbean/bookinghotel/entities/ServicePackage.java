@@ -28,7 +28,7 @@ public class ServicePackage {
     @Column(name = "duration")
     private Integer duration;
 
-    @OneToOne(mappedBy = "servicePackage", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "servicePackage", fetch = FetchType.LAZY)
     @JsonBackReference("service-package-payment")
     private PaymentTransaction paymentTransaction;
 

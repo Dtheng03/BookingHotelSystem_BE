@@ -135,7 +135,10 @@ public class PaymentService {
             user.get().setPackageStartDate(null);
             user.get().setPackageEndDate(null);
             user.get().setStatus(PackageStatus.INACTIVE);
+            PaymentTransaction paymentTransaction = new PaymentTransaction();
             userRepository.save(user.get());
+            paymentTransactionRepository.deleteByEmailGuest(email);
+
         }
     }
 }
