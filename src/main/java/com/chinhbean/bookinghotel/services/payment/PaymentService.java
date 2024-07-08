@@ -116,6 +116,8 @@ public class PaymentService {
             for (BookingDetails bookingDetail : bookingDetails) {
                 roomTypeRepository.incrementRoomQuantity(bookingDetail.getRoomType().getId(), bookingDetail.getNumberOfRooms());
             }
+            paymentTransactionRepository.deleteByEmailGuest(booking.getEmail());
+
         }
         bookingRepository.save(booking);
     }
@@ -135,7 +137,10 @@ public class PaymentService {
             user.get().setPackageStartDate(null);
             user.get().setPackageEndDate(null);
             user.get().setStatus(PackageStatus.INACTIVE);
+            PaymentTransaction paymentTransaction = new PaymentTransaction();
             userRepository.save(user.get());
+            paymentTransactionRepository.deleteByEmailGuest(email);
+
         }
     }
 }
