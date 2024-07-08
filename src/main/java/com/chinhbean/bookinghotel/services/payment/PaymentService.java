@@ -116,6 +116,8 @@ public class PaymentService {
             for (BookingDetails bookingDetail : bookingDetails) {
                 roomTypeRepository.incrementRoomQuantity(bookingDetail.getRoomType().getId(), bookingDetail.getNumberOfRooms());
             }
+            paymentTransactionRepository.deleteByEmailGuest(booking.getEmail());
+
         }
         bookingRepository.save(booking);
     }
