@@ -63,8 +63,14 @@ public class Hotel {
     @JoinColumn(name = "hotel_id")
     private Set<HotelImages> hotelImages;
 
+
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "hotel_id")
     private Set<HotelBusinessLicense> hotelBusinessLicenses;
+
+    //position on map, array
+    @Column(name = "position", nullable = false)
+    @ElementCollection
+    private List<Double> position;
 
 }

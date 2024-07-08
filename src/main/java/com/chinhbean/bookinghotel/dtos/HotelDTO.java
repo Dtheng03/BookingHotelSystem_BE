@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -41,4 +42,8 @@ public class HotelDTO {
     @NotNull(message = "Location is required")
     @Valid
     private HotelLocationDTO location;
+
+    @Size(min = 2, max = 2, message = "Position must contain exactly 2 values (latitude and longitude)")
+    private List<Double> position;
+
 }

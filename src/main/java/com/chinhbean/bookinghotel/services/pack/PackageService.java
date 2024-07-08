@@ -104,22 +104,27 @@ public class PackageService implements IPackageService {
         User currentUser = (User) authentication.getPrincipal();
         Long userId = currentUser.getId();
 
+        //check user and get user
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
+        //check package and get package
         ServicePackage servicePackage = servicePackageRepository.findById(packageId)
                 .orElseThrow(() -> new IllegalArgumentException("Package not found"));
 
+        //check date > now
         LocalDate now = LocalDate.now();
+
+        //case 30
+
         if (servicePackage.getDuration() == 30) {
-            if (now.isAfter(user.getPackageEndDate())) {
                 user.setServicePackage(servicePackage);
                 user.setPackageStartDate(now);
                 user.setPackageEndDate(now.plusDays(30));
                 user.setStatus(PackageStatus.PENDING);
                 userRepository.save(user);
-            }
         } else {
+            //case other (365)
             user.setServicePackage(servicePackage);
             user.setPackageStartDate(now);
             user.setPackageEndDate(now.plusDays(365));

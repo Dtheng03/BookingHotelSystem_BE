@@ -130,6 +130,7 @@ public class HotelService implements IHotelService {
         logger.info("Creating a new hotel with name: {}", hotelDTO.getHotelName());
         Hotel hotel = convertToEntity(hotelDTO);
         hotel.setPartner(currentUser);
+        hotel.setPosition(hotelDTO.getPosition());
         Set<Convenience> newConveniences = hotel.getConveniences().stream()
                 .filter(convenience -> convenience.getId() == null)
                 .collect(Collectors.toSet());
@@ -155,10 +156,12 @@ public class HotelService implements IHotelService {
                 .status(HotelStatus.PENDING)
                 .conveniences(conveniences)
                 .location(location)
+                .position(hotelDTO.getPosition())
                 .build();
         location.setHotel(hotel);
         return hotel;
     }
+
 
     private Convenience convertToConvenienceEntity(ConvenienceDTO dto) {
         return convenienceRepository.findByFreeBreakfastAndPickUpDropOffAndRestaurantAndBarAndPoolAndFreeInternetAndReception24hAndLaundry(
