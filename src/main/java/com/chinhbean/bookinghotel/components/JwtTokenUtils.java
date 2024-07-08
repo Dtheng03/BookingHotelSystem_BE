@@ -109,12 +109,12 @@ public class JwtTokenUtils {
 
     public boolean validateToken(String token, UserDetails userDetails) {
         try {
-            String phoneNumber = extractPhoneNumber(token);
+            String identifier = extractIdentifier(token);
             Token existingToken = ITokenRepository.findByToken(token);
             if (existingToken == null || existingToken.isRevoked()) {
                 return false;
             }
-            return (phoneNumber.equals(userDetails.getUsername()))
+            return (identifier.equals(userDetails.getUsername()))
                     && !isTokenExpired(token);
         } catch (MalformedJwtException e) {
             logger.error("Invalid JWT token: {}", e.getMessage());
@@ -125,7 +125,6 @@ public class JwtTokenUtils {
         } catch (IllegalArgumentException e) {
             logger.error("JWT claims string is empty: {}", e.getMessage());
         }
-
         return false;
     }
 }
