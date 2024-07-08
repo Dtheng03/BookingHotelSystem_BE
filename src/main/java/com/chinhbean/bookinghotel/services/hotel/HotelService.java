@@ -7,6 +7,7 @@ import com.chinhbean.bookinghotel.dtos.HotelDTO;
 import com.chinhbean.bookinghotel.dtos.HotelLocationDTO;
 import com.chinhbean.bookinghotel.entities.*;
 import com.chinhbean.bookinghotel.enums.HotelStatus;
+import com.chinhbean.bookinghotel.enums.PackageStatus;
 import com.chinhbean.bookinghotel.exceptions.DataNotFoundException;
 import com.chinhbean.bookinghotel.exceptions.PermissionDenyException;
 import com.chinhbean.bookinghotel.repositories.IConvenienceRepository;
@@ -72,7 +73,9 @@ public class HotelService implements IHotelService {
 
     @Transactional
     @Override
-    public Page<HotelResponse> getPartnerHotels(int page, int size, User userDetails) {
+    public Page<HotelResponse> getPartnerHotels(int page, int size, User userDetails) throws PermissionDenyException {
+        PackageStatus packageStatus = getPackageStatus(userDetails);
+        checkPackageStatus(packageStatus, userDetails);
         logger.info("Getting hotels for partner with ID: {}", userDetails.getId());
         Pageable pageable = PageRequest.of(page, size);
         Page<Hotel> hotels = hotelRepository.findHotelsByPartnerId(userDetails.getId(), pageable);
@@ -102,6 +105,11 @@ public class HotelService implements IHotelService {
             logger.info("Unauthenticated access to hotel details with ID: {}", hotelId);
         }
 
+        if (currentUser != null) {
+            PackageStatus packageStatus = getPackageStatus(currentUser);
+            checkPackageStatus(packageStatus, currentUser);
+        }
+
         if (!HotelStatus.ACTIVE.equals(hotel.getStatus())) {
             if (currentUser == null ||
                     (!currentUser.getId().equals(hotel.getPartner().getId()) &&
@@ -124,9 +132,11 @@ public class HotelService implements IHotelService {
 
     @Transactional
     @Override
-    public HotelResponse createHotel(HotelDTO hotelDTO) {
+    public HotelResponse createHotel(HotelDTO hotelDTO) throws PermissionDenyException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
+        PackageStatus packageStatus = getPackageStatus(currentUser);
+        checkPackageStatus(packageStatus, currentUser);
         logger.info("Creating a new hotel with name: {}", hotelDTO.getHotelName());
         Hotel hotel = convertToEntity(hotelDTO);
         hotel.setPartner(currentUser);
@@ -139,7 +149,6 @@ public class HotelService implements IHotelService {
         logger.info("Hotel created successfully with ID: {}", savedHotel.getId());
         return HotelResponse.fromHotel(savedHotel);
     }
-
 
     private Hotel convertToEntity(HotelDTO hotelDTO) {
         HotelLocation location = new HotelLocation();
@@ -161,7 +170,6 @@ public class HotelService implements IHotelService {
         location.setHotel(hotel);
         return hotel;
     }
-
 
     private Convenience convertToConvenienceEntity(ConvenienceDTO dto) {
         return convenienceRepository.findByFreeBreakfastAndPickUpDropOffAndRestaurantAndBarAndPoolAndFreeInternetAndReception24hAndLaundry(
@@ -197,9 +205,15 @@ public class HotelService implements IHotelService {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
+        if(currentUser != null){
+            PackageStatus packageStatus = getPackageStatus(currentUser);
+            checkPackageStatus(packageStatus, currentUser);
+        }
+
         if (hotel.getStatus() == HotelStatus.PENDING) {
             throw new PermissionDenyException(localizationUtils.getLocalizedMessage(MessageKeys.HOTEL_IS_PENDING));
         }
+        assert currentUser != null;
         if (!currentUser.getId().equals(hotel.getPartner().getId())) {
             throw new PermissionDenyException(localizationUtils.getLocalizedMessage(MessageKeys.USER_DOES_NOT_HAVE_PERMISSION_TO_UPDATE_HOTEL));
         }
@@ -240,6 +254,8 @@ public class HotelService implements IHotelService {
                 .orElseThrow(() -> new DataNotFoundException(localizationUtils.getLocalizedMessage(MessageKeys.HOTEL_DOES_NOT_EXISTS)));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
+        PackageStatus packageStatus = getPackageStatus(currentUser);
+        checkPackageStatus(packageStatus, currentUser);
         if (Role.ADMIN.equals(currentUser.getRole().getRoleName())) {
             hotel.setStatus(newStatus);
         } else if (Role.PARTNER.equals(currentUser.getRole().getRoleName())) {
@@ -300,5 +316,22 @@ public class HotelService implements IHotelService {
         } catch (UsernameNotFoundException e) {
             throw new PermissionDenyException(MessageKeys.USER_NOT_FOUND);
         }
+    }
+
+    private void checkPackageStatus(PackageStatus packageStatus, User user) throws PermissionDenyException {
+        if (packageStatus != PackageStatus.ACTIVE) {
+            throw new PermissionDenyException("Invalid package status: " + packageStatus);
+        }
+        if (!user.getRole().getRoleName().equalsIgnoreCase("PARTNER")) {
+            throw new PermissionDenyException("User does not have the PARTNER role.");
+        }
+    }
+
+    private PackageStatus getPackageStatus(User user) {
+        PackageStatus packageStatus = user.getStatus();
+        if (packageStatus == null) {
+            throw new IllegalStateException("Package status not found for the user with ID: " + user.getId());
+        }
+        return packageStatus;
     }
 }
