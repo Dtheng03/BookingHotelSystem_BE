@@ -99,7 +99,7 @@
         </tr>
         <tr>
             <td>Price per room:</td>
-            <td><span th:text="${pricePerRoom}"></span></td>
+            <td><span th:text="${pricePerRoom} + ' VND'"></span></td>
         </tr>
         <tr>
             <td>Number of rooms:</td>
@@ -107,7 +107,7 @@
         </tr>
         <tr>
             <td>Total Price:</td>
-            <td><span th:text="${totalPrice}"></span></td>
+            <td><span th:text="${totalPrice} + ' VND'"></span></td>
         </tr>
     </table>
     <p>Thank you for choosing our hotel.</p>

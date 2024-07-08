@@ -15,9 +15,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
@@ -102,22 +104,27 @@ public class PackageService implements IPackageService {
         User currentUser = (User) authentication.getPrincipal();
         Long userId = currentUser.getId();
 
+        //check user and get user
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
+        //check package and get package
         ServicePackage servicePackage = servicePackageRepository.findById(packageId)
                 .orElseThrow(() -> new IllegalArgumentException("Package not found"));
 
+        //check date > now
         LocalDate now = LocalDate.now();
+
+        //case 30
+
         if (servicePackage.getDuration() == 30) {
-            if (now.isAfter(user.getPackageEndDate())) {
                 user.setServicePackage(servicePackage);
                 user.setPackageStartDate(now);
                 user.setPackageEndDate(now.plusDays(30));
                 user.setStatus(PackageStatus.PENDING);
                 userRepository.save(user);
-            }
         } else {
+            //case other (365)
             user.setServicePackage(servicePackage);
             user.setPackageStartDate(now);
             user.setPackageEndDate(now.plusDays(365));
@@ -169,10 +176,11 @@ public class PackageService implements IPackageService {
             dataMail.setTo(servicePackage.getPaymentTransaction().getEmailGuest());
             dataMail.setSubject(MailTemplate.SEND_MAIL_SUBJECT.PACKAGE_PAYMENT_SUCCESS);
 
+            NumberFormat currencyFormatter = NumberFormat.getInstance(new Locale("vi", "VN"));
             Map<String, Object> props = new HashMap<>();
             props.put("fullName", servicePackage.getPaymentTransaction().getNameGuest());
             props.put("packageId", servicePackage.getId());
-            props.put("packagePrice", servicePackage.getPrice());
+            props.put("packagePrice", currencyFormatter.format(servicePackage.getPrice()));
             props.put("packageDuration", servicePackage.getDuration());
             props.put("description", servicePackage.getDescription());
             dataMail.setProps(props);
