@@ -47,14 +47,14 @@ public class HotelController {
     @GetMapping("/get-hotels")
     public ResponseEntity<ResponseObject> getHotels(@NonNull HttpServletRequest request,
                                                     @RequestParam(defaultValue = "0") int page,
-                                                    @RequestParam(defaultValue = "10") int size) {
+                                                    @RequestParam(defaultValue = "10") int size) throws PermissionDenyException {
         final String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             final String token = authHeader.substring(7);
-            final String phoneNumber = jwtTokenUtils.extractPhoneNumber(token);
+            final String identifier = jwtTokenUtils.extractIdentifier(token);
             User userDetails = null;
-            if (phoneNumber != null) {
-                userDetails = (User) userDetailsService.loadUserByUsername(phoneNumber);
+            if (identifier != null) {
+                userDetails = (User) userDetailsService.loadUserByUsername(identifier);
             }
             if (userDetails != null) {
                 if (userDetails.getRole().getId() == 1) {
