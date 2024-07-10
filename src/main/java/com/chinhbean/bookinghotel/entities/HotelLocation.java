@@ -1,6 +1,7 @@
 package com.chinhbean.bookinghotel.entities;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Entity
@@ -26,4 +27,13 @@ public class HotelLocation {
 
     @Column(nullable = false)
     private String province;
+
+    @Column(nullable = false)
+    @NotNull(message = "Latitude is required")
+    private Double latitude;
+
+    @Column(nullable = false)
+    @NotNull(message = "Longitude is required")
+    private Double longitude;
+
 }

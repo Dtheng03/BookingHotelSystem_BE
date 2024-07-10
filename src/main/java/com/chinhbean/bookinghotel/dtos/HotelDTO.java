@@ -43,7 +43,5 @@ public class HotelDTO {
     @Valid
     private HotelLocationDTO location;
 
-    @Size(min = 2, max = 2, message = "Position must contain exactly 2 values (latitude and longitude)")
-    private List<Double> position;
 
 }

@@ -69,8 +69,5 @@ public class Hotel {
     private Set<HotelBusinessLicense> hotelBusinessLicenses;
 
     //position on map, array
-    @Column(name = "position", nullable = false)
-    @ElementCollection
-    private List<Double> position;
 
 }

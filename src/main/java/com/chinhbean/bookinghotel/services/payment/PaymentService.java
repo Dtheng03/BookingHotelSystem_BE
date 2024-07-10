@@ -127,9 +127,12 @@ public class PaymentService {
         Optional<User> user = userRepository.findByEmail(email);
 
         if (!user.isPresent()) {
+
             throw new IllegalArgumentException("User with email: " + email + " does not exist.");
         }
+
         if (isSuccess) {
+
             user.get().setStatus(PackageStatus.ACTIVE);
             userRepository.save(user.get());
         } else {
