@@ -1,6 +1,7 @@
 package com.chinhbean.bookinghotel.components;
 
 import com.chinhbean.bookinghotel.entities.Token;
+import com.chinhbean.bookinghotel.entities.User;
 import com.chinhbean.bookinghotel.exceptions.InvalidParamException;
 import com.chinhbean.bookinghotel.repositories.ITokenRepository;
 import com.chinhbean.bookinghotel.utils.MessageKeys;
@@ -39,24 +40,23 @@ public class JwtTokenUtils {
     private final ITokenRepository ITokenRepository;
     private static final Logger logger = LoggerFactory.getLogger(JwtTokenUtils.class);
 
-    public String generateToken(com.chinhbean.bookinghotel.entities.User user) throws InvalidParamException {
+    public String generateToken(User user) throws InvalidParamException {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("phoneNumber", user.getPhoneNumber());
         claims.put("userId", user.getId());
         claims.put("role", user.getRole().getRoleName());
-        claims.put("email", user.getEmail() == null ? "" : user.getEmail());
+        claims.put("email", user.getEmail());
+        if (user.getPhoneNumber() != null && !user.getPhoneNumber().isEmpty()) {
+            claims.put("phoneNumber", user.getPhoneNumber());
+        }
 
         try {
             return Jwts.builder()
                     .setClaims(claims)
-                    .setSubject(user.getPhoneNumber())
+                    .setSubject(user.getEmail() != null ? user.getEmail() : user.getPhoneNumber())
                     .setExpiration(new Date(System.currentTimeMillis() + expiration * 1000L))
                     .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                     .compact();
         } catch (Exception e) {
-            // Log the error
-            // logger.error("Cannot create JWT token", e);
-            // Throw a new InvalidParamException with the original exception as the cause
             throw new InvalidParamException(MessageKeys.TOKEN_GENERATION_FAILED, e);
         }
     }
@@ -92,19 +92,11 @@ public class JwtTokenUtils {
                 .getBody();
     }
 
-    public String extractPhoneNumber(String token) {
-        return extractClaim(token, Claims::getSubject);
-    }
-
     public String extractIdentifier(String token) {
         Claims claims = extractAllClaims(token);
         String email = claims.get("email", String.class);
         String phoneNumber = claims.get("phoneNumber", String.class);
         return (email != null && !email.isEmpty()) ? email : phoneNumber;
-    }
-
-    public String extractEmail(String token) {
-        return extractClaim(token, claims -> claims.get("email", String.class));
     }
 
     public boolean validateToken(String token, UserDetails userDetails) {

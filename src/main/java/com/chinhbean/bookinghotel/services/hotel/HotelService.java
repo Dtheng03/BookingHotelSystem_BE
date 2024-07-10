@@ -75,7 +75,7 @@ public class HotelService implements IHotelService {
     @Override
     public Page<HotelResponse> getPartnerHotels(int page, int size, User userDetails) throws PermissionDenyException {
         PackageStatus packageStatus = getPackageStatus(userDetails);
-        checkPackageStatus(packageStatus, userDetails);
+        checkPackageStatus(packageStatus);
         logger.info("Getting hotels for partner with ID: {}", userDetails.getId());
         Pageable pageable = PageRequest.of(page, size);
         Page<Hotel> hotels = hotelRepository.findHotelsByPartnerId(userDetails.getId(), pageable);
@@ -105,9 +105,9 @@ public class HotelService implements IHotelService {
             logger.info("Unauthenticated access to hotel details with ID: {}", hotelId);
         }
 
-        if (currentUser != null) {
+        if (currentUser != null && currentUser.getRole().getRoleName().equalsIgnoreCase("PARTNER")){
             PackageStatus packageStatus = getPackageStatus(currentUser);
-            checkPackageStatus(packageStatus, currentUser);
+            checkPackageStatus(packageStatus);
         }
 
         if (!HotelStatus.ACTIVE.equals(hotel.getStatus())) {
@@ -135,8 +135,10 @@ public class HotelService implements IHotelService {
     public HotelResponse createHotel(HotelDTO hotelDTO) throws PermissionDenyException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
-        PackageStatus packageStatus = getPackageStatus(currentUser);
-        checkPackageStatus(packageStatus, currentUser);
+        if (currentUser != null && currentUser.getRole().getRoleName().equalsIgnoreCase("PARTNER")){
+            PackageStatus packageStatus = getPackageStatus(currentUser);
+            checkPackageStatus(packageStatus);
+        }
         logger.info("Creating a new hotel with name: {}", hotelDTO.getHotelName());
         Hotel hotel = convertToEntity(hotelDTO);
         hotel.setPartner(currentUser);
@@ -205,9 +207,9 @@ public class HotelService implements IHotelService {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
-        if(currentUser != null){
+        if (currentUser != null && currentUser.getRole().getRoleName().equalsIgnoreCase("PARTNER")){
             PackageStatus packageStatus = getPackageStatus(currentUser);
-            checkPackageStatus(packageStatus, currentUser);
+            checkPackageStatus(packageStatus);
         }
 
         if (hotel.getStatus() == HotelStatus.PENDING) {
@@ -250,12 +252,14 @@ public class HotelService implements IHotelService {
     @Transactional
     @Override
     public void updateStatus(Long hotelId, HotelStatus newStatus) throws DataNotFoundException, PermissionDenyException {
-        Hotel hotel = hotelRepository.findById(hotelId)
-                .orElseThrow(() -> new DataNotFoundException(localizationUtils.getLocalizedMessage(MessageKeys.HOTEL_DOES_NOT_EXISTS)));
+        Hotel hotel = getHotelById(hotelId);
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
-        PackageStatus packageStatus = getPackageStatus(currentUser);
-        checkPackageStatus(packageStatus, currentUser);
+        if (currentUser != null && currentUser.getRole().getRoleName().equalsIgnoreCase("PARTNER")){
+            PackageStatus packageStatus = getPackageStatus(currentUser);
+            checkPackageStatus(packageStatus);
+        }
+        assert currentUser != null;
         if (Role.ADMIN.equals(currentUser.getRole().getRoleName())) {
             hotel.setStatus(newStatus);
         } else if (Role.PARTNER.equals(currentUser.getRole().getRoleName())) {
@@ -318,12 +322,9 @@ public class HotelService implements IHotelService {
         }
     }
 
-    private void checkPackageStatus(PackageStatus packageStatus, User user) throws PermissionDenyException {
+    private void checkPackageStatus(PackageStatus packageStatus) throws PermissionDenyException {
         if (packageStatus != PackageStatus.ACTIVE) {
             throw new PermissionDenyException("Invalid package status: " + packageStatus);
-        }
-        if (!user.getRole().getRoleName().equalsIgnoreCase("PARTNER")) {
-            throw new PermissionDenyException("User does not have the PARTNER role.");
         }
     }
 
