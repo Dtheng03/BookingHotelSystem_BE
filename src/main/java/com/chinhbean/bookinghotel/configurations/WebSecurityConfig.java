@@ -3,6 +3,7 @@ package com.chinhbean.bookinghotel.configurations;
 import com.chinhbean.bookinghotel.components.JwtTokenUtils;
 import com.chinhbean.bookinghotel.entities.User;
 import com.chinhbean.bookinghotel.filters.JwtTokenFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -22,8 +23,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
@@ -83,12 +82,14 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                         .successHandler((request, response, authentication) -> {
                             User user = (User) authentication.getPrincipal();
                             String token = jwtTokenUtils.generateToken(user);
-                            String redirectUrl = frontendUrl + "/oauth2/redirect?token=" + URLEncoder.encode(token, StandardCharsets.UTF_8);
-                            response.sendRedirect(redirectUrl);
+                            response.setContentType("application/json");
+                            response.setStatus(HttpServletResponse.SC_OK);
+                            response.getWriter().write("{\"token\":\"" + token + "\"}");
                         })
                         .failureHandler((request, response, exception) -> {
-                            String errorMessage = URLEncoder.encode(exception.getMessage(), StandardCharsets.UTF_8);
-                            response.sendRedirect(frontendUrl + "/login?error=" + errorMessage);
+                            response.setContentType("application/json");
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.getWriter().write("{\"error\":\"" + exception.getMessage() + "\"}");
                         })
                 );
         return http.build();

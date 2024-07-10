@@ -1,7 +1,6 @@
 package com.chinhbean.bookinghotel.filters;
 
 import com.chinhbean.bookinghotel.components.JwtTokenUtils;
-import com.chinhbean.bookinghotel.entities.User;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,7 +20,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor

@@ -118,11 +118,11 @@ public class PackageService implements IPackageService {
         //case 30
 
         if (servicePackage.getDuration() == 30) {
-                user.setServicePackage(servicePackage);
-                user.setPackageStartDate(now);
-                user.setPackageEndDate(now.plusDays(30));
-                user.setStatus(PackageStatus.PENDING);
-                userRepository.save(user);
+            user.setServicePackage(servicePackage);
+            user.setPackageStartDate(now);
+            user.setPackageEndDate(now.plusDays(30));
+            user.setStatus(PackageStatus.PENDING);
+            userRepository.save(user);
         } else {
             //case other (365)
             user.setServicePackage(servicePackage);
