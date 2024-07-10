@@ -95,10 +95,10 @@ public class User extends BaseEntity implements UserDetails, OAuth2User {
 
     @Override
     public String getUsername() {
-        if (phoneNumber != null && !phoneNumber.isEmpty()) {
-            return phoneNumber;
-        } else if (email != null && !email.isEmpty()) {
+        if (email != null && !email.isEmpty()) {
             return email;
+        } else if (phoneNumber != null && !phoneNumber.isEmpty()) {
+            return phoneNumber;
         }
         return "";
     }

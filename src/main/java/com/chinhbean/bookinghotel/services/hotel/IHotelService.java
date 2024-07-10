@@ -19,7 +19,7 @@ public interface IHotelService {
 
     Page<HotelResponse> getAdminHotels(int page, int size);
 
-    Page<HotelResponse> getPartnerHotels(int page, int size, User userDetails);
+    Page<HotelResponse> getPartnerHotels(int page, int size, User userDetails) throws PermissionDenyException;
 
     HotelResponse getHotelDetail(Long hotelId, HttpServletRequest request) throws DataNotFoundException, PermissionDenyException;
 

@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.util.Pair;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
@@ -48,12 +49,10 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             return;
         }
         final String token = authHeader.substring(7);
-        final String phoneNumber = jwtTokenUtils.extractPhoneNumber(token);
-        final String email = jwtTokenUtils.extractEmail(token);
-        if ((phoneNumber != null || email != null)
+        final String identifier = jwtTokenUtils.extractIdentifier(token);
+        if ((identifier != null)
                 && SecurityContextHolder.getContext().getAuthentication() == null) {
-            User userDetails;
-            userDetails = (User) userDetailsService.loadUserByUsername(Objects.requireNonNullElse(email, phoneNumber));
+            UserDetails userDetails = userDetailsService.loadUserByUsername(identifier);
             if (jwtTokenUtils.validateToken(token, userDetails)) {
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
