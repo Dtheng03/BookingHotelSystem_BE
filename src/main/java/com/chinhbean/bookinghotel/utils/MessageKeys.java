@@ -46,7 +46,7 @@ public class MessageKeys {
     public static final String TOKEN_GENERATION_FAILED = "user.login.jwt.token_can_not_create";
 
     public static final String UPDATE_HOTEL_STATUS_SUCCESSFULLY = "hotel.update_status.update_hotel_status_successfully";
-    public static final String USER_CANNOT_CHANGE_STATUS_TO = "update_status.user_cannot_change_status_to";
+    public static final String USER_CANNOT_CHANGE_STATUS = "update_status.user_cannot_change_status";
     public static final String INSERT_HOTEL_SUCCESSFULLY = "hotel.create_hotel.create_successfully";
     public static final String UPDATE_HOTEL_SUCCESSFULLY = "hotel.update_hotel.update_successfully";
     public static final String HOTEL_DOES_NOT_EXISTS = "hotel.list_hotel.hotel_not_exist";

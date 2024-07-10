@@ -80,23 +80,28 @@ public class OAuth2Service implements IOAuth2Service {
     @Transactional
     @Override
     public LoginResponse handleGoogleLogin(String token, HttpServletRequest request) throws Exception {
-        GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory())
-                .setAudience(Collections.singletonList(googleClientId))
-                .build();
+        try {
+            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory())
+                    .setAudience(Collections.singletonList(googleClientId))
+                    .build();
 
-        GoogleIdToken idToken = verifier.verify(token);
+            GoogleIdToken idToken = verifier.verify(token);
 
-        if (idToken != null) {
-            GoogleIdToken.Payload payload = idToken.getPayload();
-            String email = payload.getEmail();
-            String name = (String) payload.get("name");
-            String googleId = payload.getSubject();
+            if (idToken != null) {
+                GoogleIdToken.Payload payload = idToken.getPayload();
+                String email = payload.getEmail();
+                String name = (String) payload.get("name");
+                String googleId = payload.getSubject();
 
-            User user = processGoogleUser(email, name, googleId);
+                User user = processGoogleUser(email, name, googleId);
 
-            return generateLoginResponse(user, request, "Google login successful");
-        } else {
-            throw new Exception("Invalid ID token");
+                return generateLoginResponse(user, request, "Google login successful");
+            } else {
+                throw new Exception("Invalid ID token");
+            }
+        } catch (Exception e) {
+            logger.error("Google login error", e);
+            throw new Exception("Google login failed: " + e.getMessage());
         }
     }
 
