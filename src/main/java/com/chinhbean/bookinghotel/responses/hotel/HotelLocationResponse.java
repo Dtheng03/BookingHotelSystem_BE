@@ -2,6 +2,7 @@ package com.chinhbean.bookinghotel.responses.hotel;
 
 import com.chinhbean.bookinghotel.entities.HotelLocation;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,11 +22,19 @@ public class HotelLocationResponse {
     @JsonProperty("province")
     private String province;
 
+    @JsonProperty("latitude")
+    private Double latitude;
+
+    @JsonProperty("longitude")
+    private Double longitude;
+
     public static HotelLocationResponse fromHotelLocation(HotelLocation hotelLocation) {
         return HotelLocationResponse.builder()
                 .id(hotelLocation.getId())
                 .address(hotelLocation.getAddress())
                 .province(hotelLocation.getProvince())
+                .latitude(hotelLocation.getLatitude())
+                .longitude(hotelLocation.getLongitude())
                 .build();
     }
 }

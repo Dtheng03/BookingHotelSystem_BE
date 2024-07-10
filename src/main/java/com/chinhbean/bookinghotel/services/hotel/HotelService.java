@@ -140,7 +140,6 @@ public class HotelService implements IHotelService {
         logger.info("Creating a new hotel with name: {}", hotelDTO.getHotelName());
         Hotel hotel = convertToEntity(hotelDTO);
         hotel.setPartner(currentUser);
-        hotel.setPosition(hotelDTO.getPosition());
         Set<Convenience> newConveniences = hotel.getConveniences().stream()
                 .filter(convenience -> convenience.getId() == null)
                 .collect(Collectors.toSet());
@@ -154,6 +153,9 @@ public class HotelService implements IHotelService {
         HotelLocation location = new HotelLocation();
         location.setAddress(hotelDTO.getLocation().getAddress());
         location.setProvince(hotelDTO.getLocation().getProvince());
+        location.setLatitude(hotelDTO.getLocation().getLatitude());
+        location.setLongitude(hotelDTO.getLocation().getLongitude());
+
         Set<Convenience> conveniences = hotelDTO.getConveniences().stream()
                 .map(this::createNewConvenience)
                 .collect(Collectors.toSet());
@@ -165,7 +167,6 @@ public class HotelService implements IHotelService {
                 .status(HotelStatus.PENDING)
                 .conveniences(conveniences)
                 .location(location)
-                .position(hotelDTO.getPosition())
                 .build();
         location.setHotel(hotel);
         return hotel;
@@ -183,7 +184,6 @@ public class HotelService implements IHotelService {
                         dto.getLaundry())
                 .orElseGet(() -> createNewConvenience(dto));
     }
-
     private Convenience createNewConvenience(ConvenienceDTO dto) {
         Convenience convenience = new Convenience();
         convenience.setFreeBreakfast(dto.getFreeBreakfast());
