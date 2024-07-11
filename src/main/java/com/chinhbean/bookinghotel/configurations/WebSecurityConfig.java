@@ -44,9 +44,6 @@ public class WebSecurityConfig implements WebMvcConfigurer {
     @Value("${api.prefix}")
     private String apiPrefix;
 
-    @Value("${frontend.url}")
-    private String frontendUrl;
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
