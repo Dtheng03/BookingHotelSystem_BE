@@ -2,7 +2,6 @@ package com.chinhbean.bookinghotel.responses.hotel;
 
 import com.chinhbean.bookinghotel.entities.HotelLocation;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

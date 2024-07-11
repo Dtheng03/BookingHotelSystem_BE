@@ -3,11 +3,15 @@ package com.chinhbean.bookinghotel.configurations;
 import com.chinhbean.bookinghotel.components.JwtTokenUtils;
 import com.chinhbean.bookinghotel.entities.User;
 import com.chinhbean.bookinghotel.filters.JwtTokenFilter;
+import com.chinhbean.bookinghotel.responses.ResponseObject;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -34,13 +38,11 @@ import java.util.List;
 public class WebSecurityConfig implements WebMvcConfigurer {
     private final JwtTokenFilter jwtTokenFilter;
     private final JwtTokenUtils jwtTokenUtils;
+    private final ObjectMapper objectMapper;
     private final OAuth2UserService<OAuth2UserRequest, OAuth2User> customOAuth2UserService;
 
     @Value("${api.prefix}")
     private String apiPrefix;
-
-    @Value("${frontend.url}")
-    private String frontendUrl;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -76,6 +78,18 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                         .authenticated())
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(httpSecurityCorsConfigurer -> httpSecurityCorsConfigurer.configurationSource(corsConfigurationSource()))
+                .exceptionHandling(handling -> handling
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            ResponseObject errorResponse = ResponseObject.builder()
+                                    .status(HttpStatus.UNAUTHORIZED)
+                                    .message(authException.getMessage())
+                                    .build();
+
+                            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                            objectMapper.writeValue(response.getWriter(), errorResponse);
+                        })
+                )
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(customOAuth2UserService))

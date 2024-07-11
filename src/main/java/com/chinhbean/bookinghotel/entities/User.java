@@ -80,7 +80,7 @@ public class User extends BaseEntity implements UserDetails, OAuth2User {
     @Override
     public Map<String, Object> getAttributes() {
         Map<String, Object> attributes = new HashMap<>();
-        attributes.put("fullname", this.fullName);
+        attributes.put("fullName", this.fullName);
         return attributes;
     }
 

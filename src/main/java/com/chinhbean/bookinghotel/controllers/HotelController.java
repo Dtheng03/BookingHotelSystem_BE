@@ -51,10 +51,11 @@ public class HotelController {
         final String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             final String token = authHeader.substring(7);
-            final String identifier = jwtTokenUtils.extractIdentifier(token);
+            final Map<String, String> identifier = jwtTokenUtils.extractIdentifier(token);
             User userDetails = null;
             if (identifier != null) {
-                userDetails = (User) userDetailsService.loadUserByUsername(identifier);
+                String emailOrPhone = identifier.get("email") != null ? identifier.get("email") : identifier.get("phoneNumber");
+                userDetails = (User) userDetailsService.loadUserByUsername(emailOrPhone);
             }
             if (userDetails != null) {
                 if (userDetails.getRole().getId() == 1) {
