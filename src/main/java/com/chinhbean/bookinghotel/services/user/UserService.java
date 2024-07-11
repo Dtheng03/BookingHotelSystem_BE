@@ -156,16 +156,17 @@ public class UserService implements IUserService {
             throw new DataNotFoundException("Token is expired");
         }
 
-        String identifier = jwtTokenUtils.extractIdentifier(token);
-        if (identifier == null || identifier.isEmpty()) {
+        Map<String, String> identifiers = jwtTokenUtils.extractIdentifier(token);
+        if (identifiers == null || (identifiers.get("email") == null && identifiers.get("phoneNumber") == null)) {
             logger.error("Identifier extracted from token is null or empty");
             throw new DataNotFoundException("Identifier not found in token");
         }
 
-        Optional<User> user = IUserRepository.findByEmailOrPhoneNumber(identifier, identifier);
+        String emailOrPhone = identifiers.get("email") != null ? identifiers.get("email") : identifiers.get("phoneNumber");
+        Optional<User> user = IUserRepository.findByEmailOrPhoneNumber(emailOrPhone, emailOrPhone);
 
         return user.orElseThrow(() -> {
-            logger.error("User not found for identifier: {}", identifier);
+            logger.error("User not found for identifier: {}", emailOrPhone);
             return new DataNotFoundException("User not found");
         });
     }

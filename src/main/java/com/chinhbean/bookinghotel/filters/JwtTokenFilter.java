@@ -20,6 +20,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -41,16 +42,19 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         }
         final String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            response.sendError(
-                    HttpServletResponse.SC_UNAUTHORIZED,
-                    "authHeader null or not started with Bearer");
+            filterChain.doFilter(request, response);
             return;
         }
         final String token = authHeader.substring(7);
-        final String identifier = jwtTokenUtils.extractIdentifier(token);
+        if (token.isEmpty()) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+        final Map<String, String> identifier = jwtTokenUtils.extractIdentifier(token);
         if ((identifier != null)
                 && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(identifier);
+            String emailOrPhone = identifier.get("email") != null ? identifier.get("email") : identifier.get("phoneNumber");
+            UserDetails userDetails = userDetailsService.loadUserByUsername(emailOrPhone);
             if (jwtTokenUtils.validateToken(token, userDetails)) {
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());

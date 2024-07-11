@@ -92,22 +92,29 @@ public class JwtTokenUtils {
                 .getBody();
     }
 
-    public String extractIdentifier(String token) {
+    public Map<String, String> extractIdentifier(String token) {
         Claims claims = extractAllClaims(token);
         String email = claims.get("email", String.class);
         String phoneNumber = claims.get("phoneNumber", String.class);
-        return (email != null && !email.isEmpty()) ? email : phoneNumber;
+        Map<String, String> identifiers = new HashMap<>();
+        identifiers.put("email", email);
+        identifiers.put("phoneNumber", phoneNumber);
+        return identifiers;
     }
 
     public boolean validateToken(String token, UserDetails userDetails) {
+        if (token == null || token.isEmpty()) {
+            logger.error("Token is null or empty");
+            return false;
+        }
         try {
-            String identifier = extractIdentifier(token);
+            Map<String, String> identifiers = extractIdentifier(token);
             Token existingToken = ITokenRepository.findByToken(token);
             if (existingToken == null || existingToken.isRevoked()) {
                 return false;
             }
-            return (identifier.equals(userDetails.getUsername()))
-                    && !isTokenExpired(token);
+            String identifier = identifiers.get("email") != null ? identifiers.get("email") : identifiers.get("phoneNumber");
+            return (identifier.equals(userDetails.getUsername())) && !isTokenExpired(token);
         } catch (MalformedJwtException e) {
             logger.error("Invalid JWT token: {}", e.getMessage());
         } catch (ExpiredJwtException e) {

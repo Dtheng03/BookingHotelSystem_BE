@@ -28,6 +28,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -184,6 +185,7 @@ public class HotelService implements IHotelService {
                         dto.getLaundry())
                 .orElseGet(() -> createNewConvenience(dto));
     }
+
     private Convenience createNewConvenience(ConvenienceDTO dto) {
         Convenience convenience = new Convenience();
         convenience.setFreeBreakfast(dto.getFreeBreakfast());
@@ -309,12 +311,13 @@ public class HotelService implements IHotelService {
             throw new PermissionDenyException(MessageKeys.AUTH_TOKEN_MISSING_OR_INVALID);
         }
         final String token = authHeader.substring(7);
-        final String userIdentifier = jwtTokenUtils.extractIdentifier(token);
-        if (userIdentifier == null) {
+        final Map<String, String> identifiers = jwtTokenUtils.extractIdentifier(token);
+        if (identifiers == null || (identifiers.get("email") == null && identifiers.get("phoneNumber") == null)) {
             throw new PermissionDenyException(MessageKeys.TOKEN_NO_IDENTIFIER);
         }
+        String emailOrPhone = identifiers.get("email") != null ? identifiers.get("email") : identifiers.get("phoneNumber");
         try {
-            return (User) userDetailsService.loadUserByUsername(userIdentifier);
+            return (User) userDetailsService.loadUserByUsername(emailOrPhone);
         } catch (UsernameNotFoundException e) {
             throw new PermissionDenyException(MessageKeys.USER_NOT_FOUND);
         }
