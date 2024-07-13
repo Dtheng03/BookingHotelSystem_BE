@@ -291,6 +291,24 @@ public class BookingService implements IBookingService {
         return bookingRepository.save(booking);
     }
 
+    //    PENDING, CONFIRMED, PAID, CHECKED_IN, CHECKED_OUT, CANCELLED
+//    @Transactional
+//    @Override
+//    public void updateStatus(Long bookingId, BookingStatus newStatus) throws DataNotFoundException, PermissionDenyException {
+//        logger.info("Updating status for booking with ID: {}", bookingId);
+//        Booking booking = bookingRepository.findById(bookingId)
+//                .orElseThrow(() -> new DataNotFoundException(MessageKeys.NO_BOOKINGS_FOUND));
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        User currentUser = (User) authentication.getPrincipal();
+//
+//        if (Role.PARTNER.equals(currentUser.getRole().getRoleName())) {
+//            if (newStatus == BookingStatus.CONFIRMED) {
+//                booking.setStatus(newStatus);
+//            }
+//        }
+//        bookingRepository.save(booking);
+//        logger.info("Status for booking with ID: {} updated successfully.", bookingId);
+//    }
     @Transactional
     @Override
     public void updateStatus(Long bookingId, BookingStatus newStatus) throws DataNotFoundException, PermissionDenyException {
@@ -300,14 +318,44 @@ public class BookingService implements IBookingService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
 
-        if (Role.PARTNER.equals(currentUser.getRole().getRoleName())) {
-            if (newStatus == BookingStatus.CONFIRMED) {
-                booking.setStatus(newStatus);
+        // Check user role and update status accordingly
+        if (Role.ADMIN.equals(currentUser.getRole().getRoleName()) ||
+                Role.PARTNER.equals(currentUser.getRole().getRoleName())) {
+
+            switch (newStatus) {
+                case PENDING:
+                    booking.setStatus(newStatus);
+                    break;
+                case CONFIRMED:
+                    booking.setStatus(newStatus);
+                    break;
+                case PAID:
+                    booking.setStatus(newStatus);
+                    break;
+                case CHECKED_IN:
+                    booking.setStatus(newStatus);
+                    break;
+                case CHECKED_OUT:
+                    booking.setStatus(newStatus);
+                    List<BookingDetails> bookingDetails = bookingDetailRepository.findByBookingId(bookingId);
+                    for (BookingDetails bookingDetail : bookingDetails) {
+                        roomTypeRepository.incrementRoomQuantity(bookingDetail.getRoomType().getId(), bookingDetail.getNumberOfRooms());
+                    }
+                    break;
+                case CANCELLED:
+                    booking.setStatus(newStatus);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid booking status");
             }
+        } else {
+            throw new PermissionDenyException("You do not have permission to update the booking status.");
         }
+
         bookingRepository.save(booking);
-        logger.info("Status for booking with ID: {} updated successfully.", bookingId);
+        logger.info("Status for booking with ID: {} updated successfully to {}.", bookingId, newStatus);
     }
+
 
     private BookingDetails convertToEntity(BookingDetailDTO detailDTO) {
         BookingDetails detail = new BookingDetails();

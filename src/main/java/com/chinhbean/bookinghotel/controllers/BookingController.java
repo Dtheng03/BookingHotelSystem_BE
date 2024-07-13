@@ -140,7 +140,7 @@ public class BookingController {
 
     @PutMapping("/update-status/{bookingId}")
     @PreAuthorize("hasAnyAuthority('ROLE_PARTNER')")
-    public ResponseEntity<ResponseObject> updateStatus(@PathVariable Long bookingId, @RequestBody BookingStatus newStatus) {
+    public ResponseEntity<ResponseObject> updateStatus(@PathVariable Long bookingId, @RequestParam BookingStatus newStatus) {
         try {
             bookingService.updateStatus(bookingId, newStatus);
             return ResponseEntity.ok().body(ResponseObject.builder()
