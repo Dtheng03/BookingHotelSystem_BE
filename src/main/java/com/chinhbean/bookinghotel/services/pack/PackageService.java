@@ -19,10 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.text.NumberFormat;
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -179,25 +176,32 @@ public class PackageService implements IPackageService {
         try {
             DataMailDTO dataMail = new DataMailDTO();
 
-            PaymentTransaction paymentTransaction = paymentTransactionRepository.findByEmailGuest(email);
+            Optional<PaymentTransaction> paymentTransactionOpt = paymentTransactionRepository.findByEmailGuest(email);
+            if (paymentTransactionOpt.isPresent()) {
+                PaymentTransaction paymentTransaction = paymentTransactionOpt.get();
 
-            dataMail.setTo(paymentTransaction.getEmailGuest());
-            dataMail.setSubject(MailTemplate.SEND_MAIL_SUBJECT.PACKAGE_PAYMENT_SUCCESS);
+                dataMail.setTo(paymentTransaction.getEmailGuest());
+                dataMail.setSubject(MailTemplate.SEND_MAIL_SUBJECT.PACKAGE_PAYMENT_SUCCESS);
 
-            NumberFormat currencyFormatter = NumberFormat.getInstance(new Locale("vi", "VN"));
-            Map<String, Object> props = new HashMap<>();
-            props.put("fullName", paymentTransaction.getNameGuest());
-            props.put("packageId", servicePackage.getId());
-            props.put("packagePrice", currencyFormatter.format(servicePackage.getPrice()));
-            props.put("packageDuration", servicePackage.getDuration());
-            props.put("description", servicePackage.getDescription());
-            dataMail.setProps(props);
-            mailService.sendHtmlMail(dataMail, MailTemplate.SEND_MAIL_TEMPLATE.PACKAGE_PAYMENT_SUCCESS_TEMPLATE);
-            System.out.println("Email successfully sent to " + paymentTransaction.getEmailGuest());
+                NumberFormat currencyFormatter = NumberFormat.getInstance(new Locale("vi", "VN"));
+                Map<String, Object> props = new HashMap<>();
+                props.put("fullName", paymentTransaction.getNameGuest());
+                props.put("packageId", servicePackage.getId());
+                props.put("packagePrice", currencyFormatter.format(servicePackage.getPrice()));
+                props.put("packageDuration", servicePackage.getDuration());
+                props.put("description", servicePackage.getDescription());
+                dataMail.setProps(props);
+                mailService.sendHtmlMail(dataMail, MailTemplate.SEND_MAIL_TEMPLATE.PACKAGE_PAYMENT_SUCCESS_TEMPLATE);
+                System.out.println("Email successfully sent to " + paymentTransaction.getEmailGuest());
+            } else {
+                System.out.println("No payment transaction found for email: " + email);
+            }
         } catch (Exception exp) {
             exp.printStackTrace();
         }
     }
+
+
 
 
     @Override
