@@ -15,7 +15,7 @@ public interface IPackageService {
 
     void deletePackage(Long id);
 
-    void registerPackage(Long packageId);
+    ServicePackage registerPackage(Long packageId);
 
     boolean checkAndHandlePackageExpiration();
 
