@@ -195,7 +195,37 @@ public class BookingController {
 
     @GetMapping("/export/bookings")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
-    public void exportBookings(HttpServletResponse response) throws IOException {
-        bookingService.exportBookingsToExcel(response);
+    public ResponseEntity<ResponseObject> exportBookings(
+            @RequestParam(required = false) Long partnerId,
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) Integer month,
+            @RequestParam(required = false) Integer day,
+            HttpServletResponse response) {
+        try {
+            if (year == null && month == null && day == null) {
+                throw new IllegalArgumentException("At least one of year, month, or day must be provided.");
+            }
+
+            bookingService.exportBookingsToExcel(partnerId, response, year, month, day);
+            return ResponseEntity.ok().body(ResponseObject.builder()
+                    .status(HttpStatus.OK)
+                    .message("Bookings exported successfully.")
+                    .build());
+        } catch (DataNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseObject.builder()
+                    .status(HttpStatus.NOT_FOUND)
+                    .message("No bookings found for the specified criteria.")
+                    .build());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseObject.builder()
+                    .status(HttpStatus.BAD_REQUEST)
+                    .message(e.getMessage())
+                    .build());
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseObject.builder()
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .message("An error occurred while exporting bookings.")
+                    .build());
+        }
     }
 }

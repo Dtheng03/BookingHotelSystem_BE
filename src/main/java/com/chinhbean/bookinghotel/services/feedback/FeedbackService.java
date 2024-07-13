@@ -5,7 +5,9 @@ import com.chinhbean.bookinghotel.dtos.FeedbackDTO;
 import com.chinhbean.bookinghotel.entities.Feedback;
 import com.chinhbean.bookinghotel.entities.Hotel;
 import com.chinhbean.bookinghotel.entities.User;
+import com.chinhbean.bookinghotel.enums.BookingStatus;
 import com.chinhbean.bookinghotel.exceptions.DataNotFoundException;
+import com.chinhbean.bookinghotel.repositories.IBookingRepository;
 import com.chinhbean.bookinghotel.repositories.IFeedbackRepository;
 import com.chinhbean.bookinghotel.repositories.IHotelRepository;
 import com.chinhbean.bookinghotel.responses.feedback.FeedbackResponse;
@@ -26,6 +28,7 @@ public class FeedbackService implements IFeedbackService {
     private final IFeedbackRepository feedbackRepository;
     private final LocalizationUtils localizationUtils;
     private final IHotelRepository hotelRepository;
+    private final IBookingRepository bookingRepository;
     private static final Logger logger = LoggerFactory.getLogger(FeedbackService.class);
 
     @Override
@@ -60,6 +63,9 @@ public class FeedbackService implements IFeedbackService {
         User currentUser = (User) authentication.getPrincipal();
         Hotel hotel = hotelRepository.findById(feedbackDTO.getHotelId()).orElseThrow(() ->
                 new DataNotFoundException("Hotel not found with ID: " + feedbackDTO.getHotelId()));
+
+        bookingRepository.findByUserAndHotelAndStatus(currentUser, hotel, BookingStatus.CHECKED_OUT)
+                .orElseThrow(() -> new DataNotFoundException("No completed booking found for user in this hotel"));
         logger.info("Creating feedback for the hotel with ID: {}", feedbackDTO.getHotelId());
         Feedback feedback = new Feedback();
         feedback.setHotel(hotel);
@@ -76,6 +82,10 @@ public class FeedbackService implements IFeedbackService {
         logger.info("Deleting feedback with ID: {}", feedbackId);
         Feedback feedback = feedbackRepository.findById(feedbackId)
                 .orElseThrow(() -> new DataNotFoundException("Feedback not found with ID: " + feedbackId));
+
+        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        bookingRepository.findByUserAndHotelAndStatus(currentUser, feedback.getHotel(), BookingStatus.CHECKED_OUT)
+                .orElseThrow(() -> new DataNotFoundException("No completed booking found for user in this hotel"));
         feedbackRepository.delete(feedback);
         logger.info("Successfully deleted feedback with ID: {}", feedbackId);
     }
@@ -86,6 +96,9 @@ public class FeedbackService implements IFeedbackService {
         Feedback feedback = feedbackRepository.findById(feedbackId)
                 .orElseThrow(() -> new DataNotFoundException("Feedback not found with ID: " + feedbackId));
 
+        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        bookingRepository.findByUserAndHotelAndStatus(currentUser, feedback.getHotel(), BookingStatus.CHECKED_OUT)
+                .orElseThrow(() -> new DataNotFoundException("No completed booking found for user in this hotel"));
         if (feedbackDTO.getRating() != null) {
             feedback.setRating(feedbackDTO.getRating());
         }

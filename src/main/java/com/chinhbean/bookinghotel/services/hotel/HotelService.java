@@ -9,16 +9,19 @@ import com.chinhbean.bookinghotel.enums.HotelStatus;
 import com.chinhbean.bookinghotel.enums.PackageStatus;
 import com.chinhbean.bookinghotel.exceptions.DataNotFoundException;
 import com.chinhbean.bookinghotel.exceptions.PermissionDenyException;
+import com.chinhbean.bookinghotel.repositories.IBookingRepository;
 import com.chinhbean.bookinghotel.repositories.IConvenienceRepository;
 import com.chinhbean.bookinghotel.repositories.IHotelRepository;
 import com.chinhbean.bookinghotel.responses.hotel.HotelResponse;
 import com.chinhbean.bookinghotel.utils.MessageKeys;
+import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -28,6 +31,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -40,11 +44,12 @@ public class HotelService implements IHotelService {
     private final IConvenienceRepository convenienceRepository;
     private final JwtTokenUtils jwtTokenUtils;
     private final UserDetailsService userDetailsService;
+    private final IBookingRepository bookingRepository;
     private static final Logger logger = LoggerFactory.getLogger(HotelService.class);
 
     @Transactional
     @Override
-    public Page<HotelResponse> getAllHotels(int page, int size) {
+    public Page<HotelResponse> getAllHotels(Integer page, Integer size) {
         logger.info("Fetching all ACTIVE hotels from the database.");
         Pageable pageable = PageRequest.of(page, size);
         Page<Hotel> hotels = hotelRepository.findAllByStatus(HotelStatus.ACTIVE, pageable);
@@ -58,7 +63,7 @@ public class HotelService implements IHotelService {
 
     @Transactional
     @Override
-    public Page<HotelResponse> getAdminHotels(int page, int size) {
+    public Page<HotelResponse> getAdminHotels(Integer page, Integer size) {
         logger.info("Fetching all hotels from the database.");
         Pageable pageable = PageRequest.of(page, size);
         Page<Hotel> hotels = hotelRepository.findAll(pageable);
@@ -72,7 +77,7 @@ public class HotelService implements IHotelService {
 
     @Transactional
     @Override
-    public Page<HotelResponse> getPartnerHotels(int page, int size, User userDetails) throws PermissionDenyException {
+    public Page<HotelResponse> getPartnerHotels(Integer page, Integer size, User userDetails) throws PermissionDenyException {
         PackageStatus packageStatus = getPackageStatus(userDetails);
         checkPackageStatus(packageStatus);
         logger.info("Getting hotels for partner with ID: {}", userDetails.getId());
@@ -281,13 +286,59 @@ public class HotelService implements IHotelService {
     }
 
     @Override
-    public Page<HotelResponse> findHotelsByProvinceAndDatesAndCapacity(String province, int numPeople, LocalDate checkInDate, LocalDate checkOutDate, int page, int size) {
+    public Page<HotelResponse> findHotelsByProvinceAndDatesAndCapacity(String province, Integer numPeople, LocalDate checkInDate, LocalDate checkOutDate, Integer numberOfRoom, Integer page, Integer size) {
+        // Validate input parameters
+        validateInputParameters(province, numPeople, checkInDate, checkOutDate, numberOfRoom, page, size);
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        List<Hotel> potentialHotels = hotelRepository.findPotentialHotels(province, numPeople, numberOfRoom, pageable);
+
+        List<Hotel> availableHotels = potentialHotels.stream()
+                .filter(hotel -> hasEnoughAvailableRooms(hotel, checkInDate, checkOutDate, numPeople, numberOfRoom))
+                .collect(Collectors.toList());
+
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), availableHotels.size());
+        Page<Hotel> hotelPage = new PageImpl<>(availableHotels.subList(start, end), pageable, availableHotels.size());
+        return hotelPage.map(HotelResponse::fromHotel);
+    }
+
+    private void validateInputParameters(String province, Integer numPeople, LocalDate checkInDate, LocalDate checkOutDate, Integer numberOfRoom, Integer page, Integer size) {
+        if (StringUtils.isBlank(province)) {
+            throw new IllegalArgumentException("Province must not be blank");
+        }
+        if (numPeople == null || numPeople <= 0) {
+            throw new IllegalArgumentException("Number of people must be positive");
+        }
+        if (checkInDate == null || checkOutDate == null) {
+            throw new IllegalArgumentException("Check-in and check-out dates must not be null");
+        }
         if (checkInDate.isAfter(checkOutDate)) {
             throw new IllegalArgumentException("Check-in date must be before check-out date");
         }
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Hotel> hotels = hotelRepository.findHotelsByProvinceAndDatesAndCapacity(province, checkInDate, checkOutDate, numPeople, pageable);
-        return hotels.map(HotelResponse::fromHotel);
+        if (numberOfRoom == null || numberOfRoom <= 0) {
+            throw new IllegalArgumentException("Number of rooms must be positive");
+        }
+        if (page == null || page < 0 || size == null || size <= 0) {
+            throw new IllegalArgumentException("Invalid page or size");
+        }
+    }
+
+    private boolean hasEnoughAvailableRooms(Hotel hotel, LocalDate checkInDate, LocalDate checkOutDate, Integer numPeople, Integer numberOfRoom) {
+        List<RoomType> availableRoomTypes = hotel.getRoomTypes().stream()
+                .filter(rt -> isRoomTypeAvailable(rt, checkInDate, checkOutDate, numberOfRoom))
+                .toList();
+
+        int totalAvailableRooms = availableRoomTypes.stream().mapToInt(RoomType::getNumberOfRoom).sum();
+        int totalCapacity = availableRoomTypes.stream().mapToInt(rt -> rt.getCapacityPerRoom() * rt.getNumberOfRoom()).sum();
+
+        return totalAvailableRooms >= numberOfRoom && totalCapacity >= numPeople;
+    }
+
+    private boolean isRoomTypeAvailable(RoomType roomType, LocalDate checkInDate, LocalDate checkOutDate, Integer numberOfRoom) {
+        long bookedRooms = bookingRepository.countBookedRooms(roomType.getId(), checkInDate, checkOutDate);
+        return (roomType.getNumberOfRoom() - bookedRooms) >= numberOfRoom;
     }
 
     @Override
