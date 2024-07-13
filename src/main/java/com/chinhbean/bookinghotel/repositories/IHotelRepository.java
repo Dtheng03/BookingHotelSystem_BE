@@ -23,14 +23,16 @@ public interface IHotelRepository extends JpaRepository<Hotel, Long>, JpaSpecifi
             "JOIN h.roomTypes rt " +
             "WHERE hl.province = :province " +
             "AND h.status = 'ACTIVE' " +
-            "GROUP BY h.id, hl.id " +
-            "HAVING SUM(rt.numberOfRoom) >= :numberOfRoom " +
-            "AND SUM(rt.capacityPerRoom * rt.numberOfRoom) >= :numPeople")
+            "OR SUM(rt.numberOfRoom) >= :numberOfRoom " +
+            "AND SUM(rt.capacityPerRoom * rt.numberOfRoom) >= :numPeople " +
+            "GROUP BY h.id, hl.id")
     List<Hotel> findPotentialHotels(
             @Param("province") String province,
             @Param("numPeople") Integer numPeople,
             @Param("numberOfRoom") Integer numberOfRoom,
             Pageable pageable);
+
+
 
 
     @Query("SELECT h FROM Hotel h " +
