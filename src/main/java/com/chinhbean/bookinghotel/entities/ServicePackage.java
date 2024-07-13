@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Entity
 @Table(name = "packages")
 @Getter
@@ -28,8 +30,8 @@ public class ServicePackage {
     @Column(name = "duration")
     private Integer duration;
 
-    @OneToOne(mappedBy = "servicePackage", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "servicePackage", fetch = FetchType.LAZY)
     @JsonBackReference("service-package-payment")
-    private PaymentTransaction paymentTransaction;
+    private List<PaymentTransaction> paymentTransaction;
 
 }

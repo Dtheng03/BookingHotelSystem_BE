@@ -23,7 +23,7 @@ public class PaymentTransaction {
     @JsonBackReference
     private Booking booking;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "package_id")
     @JsonBackReference("service-package-payment")
     private ServicePackage servicePackage;

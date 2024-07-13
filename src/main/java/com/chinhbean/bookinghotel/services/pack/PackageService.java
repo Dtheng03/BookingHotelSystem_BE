@@ -1,10 +1,12 @@
 package com.chinhbean.bookinghotel.services.pack;
 
 import com.chinhbean.bookinghotel.dtos.DataMailDTO;
+import com.chinhbean.bookinghotel.entities.PaymentTransaction;
 import com.chinhbean.bookinghotel.entities.ServicePackage;
 import com.chinhbean.bookinghotel.entities.User;
 import com.chinhbean.bookinghotel.enums.PackageStatus;
 import com.chinhbean.bookinghotel.repositories.IUserRepository;
+import com.chinhbean.bookinghotel.repositories.PaymentTransactionRepository;
 import com.chinhbean.bookinghotel.repositories.ServicePackageRepository;
 import com.chinhbean.bookinghotel.services.sendmails.IMailService;
 import com.chinhbean.bookinghotel.utils.MailTemplate;
@@ -33,6 +35,7 @@ public class PackageService implements IPackageService {
     private final ServicePackageRepository servicePackageRepository;
     private final IUserRepository userRepository;
     private final IMailService mailService;
+    private final PaymentTransactionRepository paymentTransactionRepository;
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     @Transactional
@@ -170,22 +173,25 @@ public class PackageService implements IPackageService {
     }
 
     @Override
-    public void sendMailNotificationForPackagePayment(ServicePackage servicePackage) {
+    public void sendMailNotificationForPackagePayment(ServicePackage servicePackage, String email) {
         try {
             DataMailDTO dataMail = new DataMailDTO();
-            dataMail.setTo(servicePackage.getPaymentTransaction().getEmailGuest());
+
+            PaymentTransaction paymentTransaction = paymentTransactionRepository.findByEmailGuest(email);
+
+            dataMail.setTo(paymentTransaction.getEmailGuest());
             dataMail.setSubject(MailTemplate.SEND_MAIL_SUBJECT.PACKAGE_PAYMENT_SUCCESS);
 
             NumberFormat currencyFormatter = NumberFormat.getInstance(new Locale("vi", "VN"));
             Map<String, Object> props = new HashMap<>();
-            props.put("fullName", servicePackage.getPaymentTransaction().getNameGuest());
+            props.put("fullName", paymentTransaction.getNameGuest());
             props.put("packageId", servicePackage.getId());
             props.put("packagePrice", currencyFormatter.format(servicePackage.getPrice()));
             props.put("packageDuration", servicePackage.getDuration());
             props.put("description", servicePackage.getDescription());
             dataMail.setProps(props);
             mailService.sendHtmlMail(dataMail, MailTemplate.SEND_MAIL_TEMPLATE.PACKAGE_PAYMENT_SUCCESS_TEMPLATE);
-            System.out.println("Email successfully sent to " + servicePackage.getPaymentTransaction().getEmailGuest());
+            System.out.println("Email successfully sent to " + paymentTransaction.getEmailGuest());
         } catch (Exception exp) {
             exp.printStackTrace();
         }

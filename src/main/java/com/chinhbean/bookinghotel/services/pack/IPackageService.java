@@ -19,7 +19,7 @@ public interface IPackageService {
 
     boolean checkAndHandlePackageExpiration();
 
-    void sendMailNotificationForPackagePayment(ServicePackage servicePackage);
+    void sendMailNotificationForPackagePayment(ServicePackage servicePackage, String email);
 
     ServicePackage findPackageWithPaymentTransactionById(Long packageId);
 }
