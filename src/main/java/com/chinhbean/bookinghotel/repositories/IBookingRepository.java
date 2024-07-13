@@ -54,5 +54,5 @@ public interface IBookingRepository extends JpaRepository<Booking, Long> {
             @Param("checkIn") LocalDate checkIn,
             @Param("checkOut") LocalDate checkOut);
 
-    Optional<Booking> findByUserAndHotelAndStatus(User user, Hotel hotel, BookingStatus status);
+    List<Booking> findByUserAndHotelAndStatus(User user, Hotel hotel, BookingStatus status);
 }

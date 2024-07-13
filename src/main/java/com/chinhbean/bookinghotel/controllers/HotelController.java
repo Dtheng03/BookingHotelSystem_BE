@@ -247,8 +247,21 @@ public class HotelController {
             @RequestParam Integer numberOfRoom,
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size) {
+        try {
+            return getHotelsResponse(hotelService.findHotelsByProvinceAndDatesAndCapacity(province, numPeople, checkInDate, checkOutDate, numberOfRoom, page, size));
 
-        return getHotelsResponse(hotelService.findHotelsByProvinceAndDatesAndCapacity(province, numPeople, checkInDate, checkOutDate, numberOfRoom, page, size));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseObject.builder()
+                    .status(HttpStatus.BAD_REQUEST)
+                    .message(e.getMessage())
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseObject.builder()
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .data(Collections.emptyList())
+                    .message(e.getMessage())
+                    .build());
+        }
     }
 
     @PostMapping("/filter")

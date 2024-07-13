@@ -317,9 +317,19 @@ public class HotelService implements IHotelService {
         if (checkInDate.isAfter(checkOutDate)) {
             throw new IllegalArgumentException("Check-in date must be before check-out date");
         }
+
+        if (checkInDate.isBefore(LocalDate.now()) || checkOutDate.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Check-in and check-out dates must not be in the past");
+        }
+
         if (numberOfRoom == null || numberOfRoom <= 0) {
             throw new IllegalArgumentException("Number of rooms must be positive");
         }
+
+        if (numberOfRoom > numPeople) {
+            throw new IllegalArgumentException("Number of rooms must not be greater than the number of people");
+        }
+
         if (page == null || page < 0 || size == null || size <= 0) {
             throw new IllegalArgumentException("Invalid page or size");
         }
