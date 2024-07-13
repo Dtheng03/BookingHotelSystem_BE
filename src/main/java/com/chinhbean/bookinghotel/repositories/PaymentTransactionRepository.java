@@ -14,6 +14,10 @@ public interface PaymentTransactionRepository extends JpaRepository<PaymentTrans
     @Transactional
     @Query("DELETE FROM PaymentTransaction pt WHERE pt.emailGuest = :emailGuest")
     void deleteByEmailGuest(String emailGuest);
+    @Modifying
+    @Transactional
+    @Query("SELECT pt FROM PaymentTransaction pt WHERE pt.emailGuest = :emailGuest")
+    PaymentTransaction findByEmailGuest(String emailGuest);
 
 }
 

@@ -100,7 +100,7 @@ public class PaymentController {
             } else if (packageId != null) {
                 paymentService.updatePaymentTransactionStatusForPackage(packageId, email, true);
                 ServicePackage servicePackage = packageService.findPackageWithPaymentTransactionById(Long.parseLong(packageId));
-                packageService.sendMailNotificationForPackagePayment(servicePackage);
+                packageService.sendMailNotificationForPackagePayment(servicePackage, email);
                 response.sendRedirect("http://localhost:3000/login");
             } else {
                 // Handle unexpected case where neither bookingId nor packageId is present
