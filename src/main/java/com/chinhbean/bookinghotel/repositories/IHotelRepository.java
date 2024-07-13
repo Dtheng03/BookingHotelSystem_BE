@@ -49,15 +49,15 @@ public interface IHotelRepository extends JpaRepository<Hotel, Long>, JpaSpecifi
             "LEFT JOIN FETCH rt.roomConveniences rc " +
             "LEFT JOIN FETCH rt.roomImages " +
             "LEFT JOIN FETCH h.location l " +
-            "WHERE (h.rating = :rating OR :rating IS NULL) OR " +
-            "(c.freeBreakfast = :freeBreakfast OR :freeBreakfast IS NULL) OR " +
-            "(c.pickUpDropOff = :pickUpDropOff OR :pickUpDropOff IS NULL) OR " +
-            "(c.restaurant = :restaurant OR :restaurant IS NULL) OR " +
-            "(c.bar = :bar OR :bar IS NULL) OR " +
-            "(c.pool = :pool OR :pool IS NULL) OR " +
-            "(c.freeInternet = :freeInternet OR :freeInternet IS NULL) OR " +
-            "(c.reception24h = :reception24h OR :reception24h IS NULL) OR " +
-            "(c.laundry = :laundry OR :laundry IS NULL) OR " +
+            "WHERE (h.rating = :rating) OR " +
+            "(c.freeBreakfast = :freeBreakfast) OR " +
+            "(c.pickUpDropOff = :pickUpDropOff) OR " +
+            "(c.restaurant = :restaurant) OR " +
+            "(c.bar = :bar) OR " +
+            "(c.pool = :pool) OR " +
+            "(c.freeInternet = :freeInternet) OR " +
+            "(c.reception24h = :reception24h) OR " +
+            "(c.laundry = :laundry) AND " +
             "h.status = 'ACTIVE'")
     Page<Hotel> filterHotelWithConvenience(Integer rating,
                                            Boolean freeBreakfast,
