@@ -18,6 +18,9 @@ public class PaymentTransaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column
+    private String transactionCode;
+
     @OneToOne
     @JoinColumn(name = "booking_id")
     @JsonBackReference

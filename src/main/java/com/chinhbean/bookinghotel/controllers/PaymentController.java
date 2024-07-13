@@ -68,6 +68,7 @@ public class PaymentController {
     public void payCallbackHandler(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String status = request.getParameter("vnp_ResponseCode");
         request.getParameter("vnp_TxnRef");
+        String transactionCode = request.getParameter("vnp_TxnRef");
         String bookingId = null;
         String packageId = null;
         String orderInfo = request.getParameter("vnp_OrderInfo");

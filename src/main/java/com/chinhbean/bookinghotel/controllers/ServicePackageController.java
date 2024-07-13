@@ -156,11 +156,12 @@ public class ServicePackageController {
     @PreAuthorize("hasAnyAuthority('ROLE_PARTNER')")
     public ResponseEntity<ResponseObject> registerPackage(@PathVariable Long packageId) {
         try {
-            packageService.registerPackage(packageId);
+            ServicePackage servicePackage = packageService.registerPackage(packageId);
             return ResponseEntity.ok().body(
                     ResponseObject.builder()
                             .status(HttpStatus.OK)
                             .message("Package registered successfully")
+                            .data(servicePackage)
                             .build());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(

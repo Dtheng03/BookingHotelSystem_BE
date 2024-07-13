@@ -102,7 +102,7 @@ public class PackageService implements IPackageService {
     @Transactional
     @Override
 
-    public void registerPackage(Long packageId) {
+    public ServicePackage registerPackage(Long packageId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
         Long userId = currentUser.getId();
@@ -136,6 +136,8 @@ public class PackageService implements IPackageService {
         }
 
         scheduler.schedule(() -> updatePackageIfPending(userId), 300, TimeUnit.SECONDS);
+
+        return servicePackage;
     }
 
     @Async
