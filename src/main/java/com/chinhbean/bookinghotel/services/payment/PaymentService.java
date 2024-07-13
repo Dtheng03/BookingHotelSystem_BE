@@ -34,7 +34,7 @@ public class PaymentService {
         long amount = Integer.parseInt(request.getAttribute("amount").toString()) * 100L;
         String bankCode = (String) request.getAttribute("bankCode");
         Long bookingId = Long.parseLong(request.getAttribute("bookingId").toString());
-
+        String transactionCode = null;
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new IllegalArgumentException("Booking with ID: " + bookingId + " does not exist."));
 
@@ -51,12 +51,16 @@ public class PaymentService {
         queryUrl += "&vnp_SecureHash=" + VNPayUtil.hmacSHA512(vnPayConfig.getSecretKey(), hashData);
         String paymentUrl = vnPayConfig.getVnp_PayUrl() + "?" + queryUrl;
 
+        // Retrieve the vnp_TxnRef
+        transactionCode = vnpParamsMap.get("vnp_TxnRef");
+
         PaymentTransaction paymentTransaction = new PaymentTransaction();
         paymentTransaction.setBooking(booking);
         paymentTransaction.setPhoneGuest((String) request.getAttribute("phoneGuest"));
         paymentTransaction.setNameGuest((String) request.getAttribute("nameGuest"));
         paymentTransaction.setEmailGuest((String) request.getAttribute("emailGuest"));
         paymentTransaction.setCreateDate(LocalDateTime.now());
+        paymentTransaction.setTransactionCode(transactionCode);
         paymentTransactionRepository.save(paymentTransaction);
 
         return PaymentDTO.VNPayResponse.builder()
@@ -73,7 +77,7 @@ public class PaymentService {
         String userEmail = (String) request.getAttribute("userEmail");
         ServicePackage servicePackage = servicePackageRepository.findById(packageId)
                 .orElseThrow(() -> new IllegalArgumentException("Package with ID: " + packageId + " does not exist."));
-
+        String transactionCode = null;
         Map<String, String> vnpParamsMap = vnPayConfig.getVNPayConfig(packageId.toString(), "Thanh toan goi dich vu: " + packageId + " cho user " + userEmail);
 
         vnpParamsMap.put("vnp_Amount", String.valueOf(amount));
@@ -82,6 +86,7 @@ public class PaymentService {
         }
 
         vnpParamsMap.put("vnp_IpAddr", VNPayUtil.getIpAddress(request));
+        transactionCode = vnpParamsMap.get("vnp_TxnRef");
 
         String queryUrl = VNPayUtil.getPaymentURL(vnpParamsMap, true);
         String hashData = VNPayUtil.getPaymentURL(vnpParamsMap, false);
@@ -94,6 +99,7 @@ public class PaymentService {
         paymentTransaction.setNameGuest((String) request.getAttribute("nameGuest"));
         paymentTransaction.setEmailGuest((String) request.getAttribute("emailGuest"));
         paymentTransaction.setCreateDate(LocalDateTime.now());
+        paymentTransaction.setTransactionCode(transactionCode);
         paymentTransactionRepository.save(paymentTransaction);
 
         return PaymentDTO.VNPayResponse.builder()
