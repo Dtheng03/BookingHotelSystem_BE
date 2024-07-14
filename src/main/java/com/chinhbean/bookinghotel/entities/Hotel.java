@@ -23,7 +23,7 @@ public class Hotel {
     private String hotelName;
 
     @Column(nullable = false)
-    private Double rating;
+    private Integer rating;
 
     @Column(nullable = false, length = 1000)
     private String description;

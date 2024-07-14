@@ -24,7 +24,7 @@ public class Feedback {
     private Hotel hotel;
 
     @Column(nullable = false)
-    private Integer rating;
+    private Double rating;
 
     @Column(nullable = false, length = 1000)
     private String comment;

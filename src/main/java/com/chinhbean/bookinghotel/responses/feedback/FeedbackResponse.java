@@ -22,7 +22,7 @@ public class FeedbackResponse {
     private Long hotelId;
 
     @JsonProperty("rating")
-    private Integer rating;
+    private Double rating;
 
     @JsonProperty("comment")
     private String comment;

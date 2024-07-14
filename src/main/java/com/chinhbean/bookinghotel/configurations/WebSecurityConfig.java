@@ -68,9 +68,6 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                                 String.format("%s/users/oauth2/google", apiPrefix),
                                 String.format("%s/feedbacks/get-all-feedback/**", apiPrefix),
                                 String.format("%s/feedbacks/get-feedback/**", apiPrefix),
-                                String.format("%s/feedbacks/create-feedback", apiPrefix),
-                                String.format("%s/feedbacks/update-feedback/**", apiPrefix),
-                                String.format("%s/feedbacks/delete-feedback/**", apiPrefix),
                                 String.format("%s/forgot-password/**", apiPrefix)
                         )
                         .permitAll()
