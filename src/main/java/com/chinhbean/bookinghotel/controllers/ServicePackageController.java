@@ -1,6 +1,10 @@
 package com.chinhbean.bookinghotel.controllers;
 
 import com.chinhbean.bookinghotel.entities.ServicePackage;
+import com.chinhbean.bookinghotel.enums.BookingStatus;
+import com.chinhbean.bookinghotel.enums.PackageStatus;
+import com.chinhbean.bookinghotel.exceptions.DataNotFoundException;
+import com.chinhbean.bookinghotel.exceptions.PermissionDenyException;
 import com.chinhbean.bookinghotel.responses.ResponseObject;
 import com.chinhbean.bookinghotel.services.pack.IPackageService;
 import com.chinhbean.bookinghotel.utils.MessageKeys;
@@ -203,6 +207,14 @@ public class ServicePackageController {
                             .message(MessageKeys.PACKAGE_EXPIRED)
                             .build());
         }
+    }
+
+    @PutMapping("/update-status/{userId}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
+    public ResponseEntity<String> updatePackageStatus(@PathVariable Long userId, @RequestParam PackageStatus newStatus) throws PermissionDenyException {
+
+        packageService.updatePackageStatus(userId, newStatus);
+        return ResponseEntity.ok(MessageKeys.UPDATE_PACKAGE_SUCCESSFULLY);
     }
 
 
