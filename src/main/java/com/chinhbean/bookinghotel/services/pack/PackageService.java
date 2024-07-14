@@ -164,6 +164,7 @@ public class PackageService implements IPackageService {
             currentUser.setServicePackage(null);
             currentUser.setPackageStartDate(null);
             currentUser.setPackageEndDate(null);
+            currentUser.setStatus(PackageStatus.EXPIRED);
             userRepository.save(currentUser);
             return true;
         }
