@@ -46,8 +46,8 @@ public class HotelController {
 
     @GetMapping("/get-hotels")
     public ResponseEntity<ResponseObject> getHotels(@NonNull HttpServletRequest request,
-                                                    @RequestParam(defaultValue = "0") int page,
-                                                    @RequestParam(defaultValue = "10") int size) throws PermissionDenyException {
+                                                    @RequestParam(defaultValue = "0") Integer page,
+                                                    @RequestParam(defaultValue = "10") Integer size) throws PermissionDenyException {
         final String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             final String token = authHeader.substring(7);
@@ -241,13 +241,27 @@ public class HotelController {
     @GetMapping("/search")
     public ResponseEntity<ResponseObject> findByProvinceAndCapacityPerRoomAndAvailability(
             @RequestParam String province,
-            @RequestParam int numPeople,
+            @RequestParam Integer numPeople,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkInDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkOutDate,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam Integer numberOfRoom,
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "10") Integer size) {
+        try {
+            return getHotelsResponse(hotelService.findHotelsByProvinceAndDatesAndCapacity(province, numPeople, checkInDate, checkOutDate, numberOfRoom, page, size));
 
-        return getHotelsResponse(hotelService.findHotelsByProvinceAndDatesAndCapacity(province, numPeople, checkInDate, checkOutDate, page, size));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseObject.builder()
+                    .status(HttpStatus.BAD_REQUEST)
+                    .message(e.getMessage())
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseObject.builder()
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .data(Collections.emptyList())
+                    .message(e.getMessage())
+                    .build());
+        }
     }
 
     @PostMapping("/filter")

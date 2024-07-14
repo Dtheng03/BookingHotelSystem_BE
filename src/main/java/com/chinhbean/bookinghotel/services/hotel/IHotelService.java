@@ -15,11 +15,11 @@ import java.time.LocalDate;
 
 @Service
 public interface IHotelService {
-    Page<HotelResponse> getAllHotels(int page, int size);
+    Page<HotelResponse> getAllHotels(Integer page, Integer size);
 
-    Page<HotelResponse> getAdminHotels(int page, int size);
+    Page<HotelResponse> getAdminHotels(Integer page, Integer size);
 
-    Page<HotelResponse> getPartnerHotels(int page, int size, User userDetails) throws PermissionDenyException;
+    Page<HotelResponse> getPartnerHotels(Integer page, Integer size, User userDetails) throws PermissionDenyException;
 
     HotelResponse getHotelDetail(Long hotelId, HttpServletRequest request) throws DataNotFoundException, PermissionDenyException;
 
@@ -31,7 +31,7 @@ public interface IHotelService {
 
     Hotel getHotelById(Long hotelId) throws DataNotFoundException;
 
-    Page<HotelResponse> findHotelsByProvinceAndDatesAndCapacity(String province, int numPeople, LocalDate checkInDate, LocalDate checkOutDate, int page, int size);
+    Page<HotelResponse> findHotelsByProvinceAndDatesAndCapacity(String province, Integer numPeople, LocalDate checkInDate, LocalDate checkOutDate, Integer numberOfRoom, Integer page, Integer size);
 
     Page<HotelResponse> filterHotelsByConveniencesAndRating(Integer rating, Boolean freeBreakfast, Boolean pickUpDropOff, Boolean restaurant, Boolean bar, Boolean pool, Boolean freeInternet, Boolean reception24h, Boolean laundry, int page, int size) throws DataNotFoundException;
 

@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
+import java.util.List;
 
 @Repository
 public interface IHotelRepository extends JpaRepository<Hotel, Long>, JpaSpecificationExecutor<Hotel> {
@@ -19,26 +19,16 @@ public interface IHotelRepository extends JpaRepository<Hotel, Long>, JpaSpecifi
     Page<Hotel> findAllByStatus(HotelStatus hotelStatus, Pageable pageable);
 
     @Query("SELECT DISTINCT h FROM Hotel h " +
-            "LEFT JOIN FETCH h.roomTypes rt " +
-            "LEFT JOIN FETCH rt.type t " +
-            "LEFT JOIN FETCH rt.roomConveniences rc " +
-            "LEFT JOIN FETCH rt.roomImages " +
-            "LEFT JOIN FETCH h.location hl " +
-            "WHERE hl.province = :province " +
-            "AND h.status = 'ACTIVE' " +
-            "AND rt.capacityPerRoom >= :capacity " +
-            "AND NOT EXISTS (" +
-            "  SELECT bd FROM BookingDetails bd " +
-            "  JOIN bd.booking b " +
-            "  WHERE bd.roomType.id = rt.id " +
-            "  AND b.checkOutDate > :checkIn " +
-            "  AND b.checkInDate < :checkOut" +
-            ")")
-    Page<Hotel> findHotelsByProvinceAndDatesAndCapacity(
+            "JOIN h.location hl " +
+            "JOIN h.roomTypes rt " +
+            "WHERE hl.province = :province AND h.status = 'ACTIVE' " +
+            "GROUP BY h.id, hl.id " +
+            "HAVING SUM(rt.numberOfRoom) >= :numberOfRoom " +
+            "AND SUM(rt.capacityPerRoom * rt.numberOfRoom) >= :numPeople")
+    List<Hotel> findPotentialHotels(
             @Param("province") String province,
-            @Param("checkIn") LocalDate checkIn,
-            @Param("checkOut") LocalDate checkOut,
-            @Param("capacity") int capacity,
+            @Param("numPeople") Integer numPeople,
+            @Param("numberOfRoom") Integer numberOfRoom,
             Pageable pageable);
 
 

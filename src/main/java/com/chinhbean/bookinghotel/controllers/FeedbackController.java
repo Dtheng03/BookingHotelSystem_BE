@@ -1,6 +1,7 @@
 package com.chinhbean.bookinghotel.controllers;
 
 import com.chinhbean.bookinghotel.dtos.FeedbackDTO;
+import com.chinhbean.bookinghotel.exceptions.DataNotFoundException;
 import com.chinhbean.bookinghotel.responses.ResponseObject;
 import com.chinhbean.bookinghotel.responses.feedback.FeedbackResponse;
 import com.chinhbean.bookinghotel.services.feedback.IFeedbackService;
@@ -58,6 +59,7 @@ public class FeedbackController {
     }
 
     @PostMapping("/create-feedback")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_CUSTOMER')")
     public ResponseEntity<ResponseObject> createFeedback(@RequestBody FeedbackDTO feedback) {
         try {
             FeedbackResponse createdFeedback = feedbackService.createFeedback(feedback);
@@ -65,6 +67,12 @@ public class FeedbackController {
                     .status(HttpStatus.CREATED)
                     .data(createdFeedback)
                     .message("Feedback created successfully")
+                    .build());
+        } catch (DataNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseObject.builder()
+                    .status(HttpStatus.NOT_FOUND)
+                    .message(e.getMessage())
+                    .data(null)
                     .build());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseObject.builder()
@@ -76,6 +84,7 @@ public class FeedbackController {
     }
 
     @DeleteMapping("/delete-feedback/{feedbackId}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_CUSTOMER')")
     public ResponseEntity<ResponseObject> deleteFeedback(@PathVariable Long feedbackId) {
         try {
             feedbackService.deleteFeedback(feedbackId);
@@ -94,6 +103,7 @@ public class FeedbackController {
     }
 
     @PutMapping("/update-feedback/{feedbackId}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_CUSTOMER')")
     public ResponseEntity<ResponseObject> updateFeedback(@PathVariable Long feedbackId, @RequestBody FeedbackDTO feedback) {
         try {
             FeedbackResponse updatedFeedback = feedbackService.updateFeedback(feedbackId, feedback);

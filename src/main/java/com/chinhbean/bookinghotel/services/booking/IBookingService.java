@@ -30,5 +30,5 @@ public interface IBookingService {
 
     Booking getBookingById(Long bookingId) throws DataNotFoundException;
 
-    void exportBookingsToExcel(HttpServletResponse response) throws IOException;
+    void exportBookingsToExcel(Long partnerId, HttpServletResponse response, Integer year, Integer month, Integer day) throws IOException, DataNotFoundException;
 }

@@ -35,7 +35,7 @@ public class HotelResponse {
     private String description;
 
     @JsonProperty("rating")
-    private Double rating;
+    private Integer rating;
 
     @JsonProperty("brand")
     private String brand;
