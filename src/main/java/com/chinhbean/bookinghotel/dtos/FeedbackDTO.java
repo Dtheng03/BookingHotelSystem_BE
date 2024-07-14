@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 public class FeedbackDTO {
     private Long hotelId;
 
-    private Integer rating;
+    private Double rating;
 
     private String comment;
 }

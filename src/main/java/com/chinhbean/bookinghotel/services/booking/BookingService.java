@@ -31,7 +31,9 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.text.NumberFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Year;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -382,11 +384,42 @@ public class BookingService implements IBookingService {
 
     @Transactional
     @Override
-    public void exportBookingsToExcel(HttpServletResponse response) throws IOException {
-        List<Booking> bookings = bookingRepository.findAll();
-        for (Booking booking : bookings) {
-            Hibernate.initialize(booking.getBookingDetails());
+    public void exportBookingsToExcel(Long partnerId, HttpServletResponse response, Integer year, Integer month, Integer day) throws IOException, DataNotFoundException {
+        LocalDateTime startDate = null;
+        LocalDateTime endDate = null;
+
+        if (year != null && month != null && day != null) {
+            startDate = LocalDateTime.of(year, month, day, 0, 0);
+            endDate = startDate.plusDays(1).minusSeconds(1);
+        } else if (year != null && month != null) {
+            startDate = LocalDateTime.of(year, month, 1, 0, 0);
+            endDate = startDate.plusMonths(1).minusSeconds(1);
+        } else if (year != null) {
+            startDate = LocalDateTime.of(year, 1, 1, 0, 0);
+            endDate = startDate.plusYears(1).minusSeconds(1);
+        } else if (month != null) {
+            Year currentYear = Year.now();
+            startDate = LocalDateTime.of(currentYear.getValue(), month, 1, 0, 0);
+            endDate = startDate.plusMonths(1).minusSeconds(1);
+        } else if (day != null) {
+            LocalDate today = LocalDate.now();
+            startDate = LocalDateTime.of(today.getYear(), today.getMonth(), day, 0, 0);
+            endDate = startDate.plusDays(1).minusSeconds(1);
         }
-        ExcelFileExporter.exportBookingsListToExcel(bookings, response);
+
+        logger.info("Finding bookings with parameters: partnerId={}, startDate={}, endDate={}", partnerId, startDate, endDate);
+
+        // Find bookings based on the constructed date range
+        List<Booking> bookings = bookingRepository.findByPartnerIdAndDateRange(partnerId, startDate, endDate);
+
+        if (bookings.isEmpty()) {
+            throw new DataNotFoundException("No bookings found for the specified criteria.");
+        }
+
+        // Export bookings to Excel
+        ExcelFileExporter.exportBookingsListToExcel(bookings, response,
+                startDate != null ? startDate.toLocalDate() : null,
+                endDate != null ? endDate.toLocalDate() : null);
     }
+
 }
