@@ -3,6 +3,7 @@ package com.chinhbean.bookinghotel.controllers;
 import com.chinhbean.bookinghotel.entities.ServicePackage;
 import com.chinhbean.bookinghotel.responses.ResponseObject;
 import com.chinhbean.bookinghotel.services.pack.IPackageService;
+import com.chinhbean.bookinghotel.utils.MessageKeys;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -28,13 +29,13 @@ public class ServicePackageController {
                     ResponseObject.builder()
                             .status(HttpStatus.OK)
                             .data(packages)
-                            .message("Packages retrieved successfully")
+                            .message(MessageKeys.RETRIEVED_ALL_PACKAGES_SUCCESSFULLY)
                             .build());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ResponseObject.builder()
                             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .message("Failed to retrieve packages: " + e.getMessage())
+                            .message(MessageKeys.RETRIEVED_ALL_PACKAGES_FAILED)
                             .build());
         }
     }
@@ -48,7 +49,7 @@ public class ServicePackageController {
                     ResponseObject.builder()
                             .status(HttpStatus.OK)
                             .data(servicePackage)
-                            .message("Package retrieved successfully")
+                            .message(MessageKeys.RETRIEVED_PACKAGE_DETAIL_SUCCESSFULLY)
                             .build());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
@@ -60,7 +61,7 @@ public class ServicePackageController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ResponseObject.builder()
                             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .message("Failed to retrieve package: " + e.getMessage())
+                            .message(MessageKeys.RETRIEVED_PACKAGE_DETAIL_FAILED)
                             .build());
         }
     }
@@ -73,7 +74,7 @@ public class ServicePackageController {
                 return ResponseEntity.badRequest().body(
                         ResponseObject.builder()
                                 .status(HttpStatus.BAD_REQUEST)
-                                .message("Invalid package creation request")
+                                .message(MessageKeys.INVALID_PACKAGE_CREATE_REQUEST)
                                 .build());
             }
 
@@ -82,13 +83,13 @@ public class ServicePackageController {
                     ResponseObject.builder()
                             .status(HttpStatus.CREATED)
                             .data(createdPackage)
-                            .message("Package created successfully")
+                            .message(MessageKeys.CREATE_PACKAGE_SUCCESSFULLY)
                             .build());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ResponseObject.builder()
                             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .message("Failed to create package: " + e.getMessage())
+                            .message(MessageKeys.INVALID_PACKAGE_CREATE_REQUEST)
                             .build());
         }
     }
@@ -101,7 +102,7 @@ public class ServicePackageController {
                 return ResponseEntity.badRequest().body(
                         ResponseObject.builder()
                                 .status(HttpStatus.BAD_REQUEST)
-                                .message("Invalid package update request")
+                                .message(MessageKeys.INVALID_PACKAGE_UPDATE_REQUEST)
                                 .build());
             }
 
@@ -110,19 +111,19 @@ public class ServicePackageController {
                     ResponseObject.builder()
                             .status(HttpStatus.OK)
                             .data(updatedPackage)
-                            .message("Package updated successfully")
+                            .message(MessageKeys.UPDATE_PACKAGE_SUCCESSFULLY)
                             .build());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                     ResponseObject.builder()
                             .status(HttpStatus.NOT_FOUND)
-                            .message(e.getMessage())
+                            .message(MessageKeys.PACKAGE_NOT_FOUND)
                             .build());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ResponseObject.builder()
                             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .message("Failed to update package: " + e.getMessage())
+                            .message(MessageKeys.INVALID_PACKAGE_UPDATE_REQUEST)
                             .build());
         }
     }
@@ -135,19 +136,19 @@ public class ServicePackageController {
             return ResponseEntity.ok().body(
                     ResponseObject.builder()
                             .status(HttpStatus.OK)
-                            .message("Package deleted successfully")
+                            .message(MessageKeys.DELETE_PACKAGE_SUCCESSFULLY)
                             .build());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                     ResponseObject.builder()
                             .status(HttpStatus.NOT_FOUND)
-                            .message(e.getMessage())
+                            .message(MessageKeys.PACKAGE_NOT_FOUND)
                             .build());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ResponseObject.builder()
                             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .message("Failed to delete package: " + e.getMessage())
+                            .message(MessageKeys.DELETE_PACKAGE_FAILED)
                             .build());
         }
     }
@@ -160,20 +161,20 @@ public class ServicePackageController {
             return ResponseEntity.ok().body(
                     ResponseObject.builder()
                             .status(HttpStatus.OK)
-                            .message("Package registered successfully")
+                            .message(MessageKeys.REGISTER_PACKAGE_SUCCESSFULLY)
                             .data(servicePackage)
                             .build());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                     ResponseObject.builder()
                             .status(HttpStatus.NOT_FOUND)
-                            .message(e.getMessage())
+                            .message(MessageKeys.PACKAGE_NOT_FOUND)
                             .build());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ResponseObject.builder()
                             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .message("Failed to register package: " + e.getMessage())
+                            .message(MessageKeys.REGISTER_PACKAGE_FAILED)
                             .build());
         }
     }
@@ -193,13 +194,13 @@ public class ServicePackageController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                     ResponseObject.builder()
                             .status(HttpStatus.NOT_FOUND)
-                            .message(e.getMessage())
+                            .message(MessageKeys.PACKAGE_NOT_FOUND)
                             .build());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ResponseObject.builder()
                             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .message("Failed to check package expiration: " + e.getMessage())
+                            .message(MessageKeys.PACKAGE_EXPIRED)
                             .build());
         }
     }
