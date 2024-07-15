@@ -132,6 +132,7 @@ public class MessageKeys {
 
     public static final String PACKAGE_NOT_FOUND = "package.list_package.package_not_found";
 
+    public static final String USER_DOES_NOT_HAVE_PACKAGE = "package.list_package.user_does_not_have_package";
     public static final String RETRIEVED_ALL_PACKAGES_SUCCESSFULLY = "package.list_package.retrieved_all_packages_successfully";
 
     public static final String REGISTER_PACKAGE_SUCCESSFULLY = "package.register_package.register_successfully";

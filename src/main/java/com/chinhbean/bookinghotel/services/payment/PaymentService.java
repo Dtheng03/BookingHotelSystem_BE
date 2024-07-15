@@ -74,39 +74,36 @@ public class PaymentService {
         long amount = Integer.parseInt(request.getAttribute("amount").toString()) * 100L;
         String bankCode = (String) request.getAttribute("bankCode");
         Long packageId = Long.parseLong(request.getAttribute("packageId").toString());
-        String userEmail = (String) request.getAttribute("userEmail");
+        String userEmail = (String) request.getAttribute("emailGuest");
+
         ServicePackage servicePackage = servicePackageRepository.findById(packageId)
                 .orElseThrow(() -> new IllegalArgumentException("Package with ID: " + packageId + " does not exist."));
-        String transactionCode = null;
-        Map<String, String> vnpParamsMap = vnPayConfig.getVNPayConfig(packageId.toString(), "Thanh toan goi dich vu: " + packageId + " cho user " + userEmail);
+
+        Map<String, String> vnpParamsMap = vnPayConfig.getVNPayConfig(packageId.toString(),
+                "Thanh toan goi dich vu: " + packageId + " cho user " + userEmail);
 
         vnpParamsMap.put("vnp_Amount", String.valueOf(amount));
         if (bankCode != null && !bankCode.isEmpty()) {
             vnpParamsMap.put("vnp_BankCode", bankCode);
         }
-
         vnpParamsMap.put("vnp_IpAddr", VNPayUtil.getIpAddress(request));
-        transactionCode = vnpParamsMap.get("vnp_TxnRef");
 
+        // Generate secure hash
         String queryUrl = VNPayUtil.getPaymentURL(vnpParamsMap, true);
         String hashData = VNPayUtil.getPaymentURL(vnpParamsMap, false);
-        queryUrl += "&vnp_SecureHash=" + VNPayUtil.hmacSHA512(vnPayConfig.getSecretKey(), hashData);
-        String paymentUrl = vnPayConfig.getVnp_PayUrl() + "?" + queryUrl;
+        String secureHash = VNPayUtil.hmacSHA512(vnPayConfig.getSecretKey(), hashData);
+        queryUrl += "&vnp_SecureHash=" + secureHash;
 
-        PaymentTransaction paymentTransaction = new PaymentTransaction();
-        paymentTransaction.setServicePackage(servicePackage);
-        paymentTransaction.setPhoneGuest((String) request.getAttribute("phoneGuest"));
-        paymentTransaction.setNameGuest((String) request.getAttribute("nameGuest"));
-        paymentTransaction.setEmailGuest((String) request.getAttribute("emailGuest"));
-        paymentTransaction.setCreateDate(LocalDateTime.now());
-        paymentTransaction.setTransactionCode(transactionCode);
-        paymentTransactionRepository.save(paymentTransaction);
+        // Form the payment URL
+        String paymentUrl = vnPayConfig.getVnp_PayUrl() + "?" + queryUrl;
 
         return PaymentDTO.VNPayResponse.builder()
                 .code("ok")
                 .message("success")
-                .paymentUrl(paymentUrl).build();
+                .paymentUrl(paymentUrl)
+                .build();
     }
+
 
     @Transactional
     public void updatePaymentTransactionStatusForBooking(String bookingId, boolean isSuccess) {

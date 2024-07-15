@@ -2,10 +2,12 @@ package com.chinhbean.bookinghotel.controllers;
 
 import com.chinhbean.bookinghotel.dtos.PaymentDTO;
 import com.chinhbean.bookinghotel.entities.Booking;
+import com.chinhbean.bookinghotel.entities.PaymentTransaction;
 import com.chinhbean.bookinghotel.entities.ServicePackage;
 import com.chinhbean.bookinghotel.entities.User;
 import com.chinhbean.bookinghotel.exceptions.DataNotFoundException;
 import com.chinhbean.bookinghotel.repositories.IUserRepository;
+import com.chinhbean.bookinghotel.repositories.PaymentTransactionRepository;
 import com.chinhbean.bookinghotel.responses.payment.PaymentResponse;
 import com.chinhbean.bookinghotel.services.booking.IBookingService;
 import com.chinhbean.bookinghotel.services.pack.IPackageService;
@@ -32,6 +34,7 @@ public class PaymentController {
     private final IUserRepository userRepository;
     private final IBookingService bookingService;
     private final IPackageService packageService;
+    private final PaymentTransactionRepository paymentTransactionRepository;
 
     @GetMapping("/vn-pay")
     public PaymentResponse<PaymentDTO.VNPayResponse> pay(
@@ -65,7 +68,7 @@ public class PaymentController {
     }
 
     @GetMapping("/vn-pay-callback")
-    public void payCallbackHandler(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void payCallbackHandler(HttpServletRequest request, HttpServletResponse response) throws IOException, DataNotFoundException {
         String status = request.getParameter("vnp_ResponseCode");
         request.getParameter("vnp_TxnRef");
         String bookingId = null;
@@ -85,7 +88,6 @@ public class PaymentController {
             bookingId = orderInfo.substring(orderInfo.indexOf("don hang:") + 9).trim();
         }
 
-
         if ("00".equals(status)) {
             // Successful payment
             if (bookingId != null) {
@@ -93,6 +95,7 @@ public class PaymentController {
                 try {
                     Booking booking = bookingService.getBookingById(Long.parseLong(bookingId));
                     bookingService.sendMailNotificationForBookingPayment(booking);
+                    savePaymentTransaction(request, bookingId, null, email);
                     response.sendRedirect("http://localhost:3000/payment-return/success");
                 } catch (DataNotFoundException e) {
                     throw new RuntimeException(e);
@@ -101,6 +104,7 @@ public class PaymentController {
                 paymentService.updatePaymentTransactionStatusForPackage(packageId, email, true);
                 ServicePackage servicePackage = packageService.findPackageWithPaymentTransactionById(Long.parseLong(packageId));
                 packageService.sendMailNotificationForPackagePayment(servicePackage, email);
+                savePaymentTransaction(request, null, packageId, email);
                 response.sendRedirect("http://localhost:3000/login");
             } else {
                 // Handle unexpected case where neither bookingId nor packageId is present
@@ -117,4 +121,22 @@ public class PaymentController {
         }
     }
 
+    private void savePaymentTransaction(HttpServletRequest request, String bookingId, String packageId, String email) throws DataNotFoundException {
+        PaymentTransaction paymentTransaction = new PaymentTransaction();
+        if (bookingId != null) {
+            Booking booking = bookingService.getBookingById(Long.parseLong(bookingId));
+            paymentTransaction.setBooking(booking);
+        }
+        if (packageId != null) {
+            ServicePackage servicePackage = packageService.findPackageWithPaymentTransactionById(Long.parseLong(packageId));
+            paymentTransaction.setServicePackage(servicePackage);
+        }
+        paymentTransaction.setPhoneGuest((String) request.getAttribute("phoneGuest"));
+        paymentTransaction.setNameGuest((String) request.getAttribute("nameGuest"));
+        paymentTransaction.setEmailGuest((String) request.getAttribute("emailGuest"));
+        paymentTransaction.setTransactionCode(request.getParameter("vnp_TxnRef"));
+        paymentTransactionRepository.save(paymentTransaction);
+
+
+    }
 }
