@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -126,16 +127,31 @@ public class PaymentController {
         if (bookingId != null) {
             Booking booking = bookingService.getBookingById(Long.parseLong(bookingId));
             paymentTransaction.setBooking(booking);
+
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new IllegalArgumentException("User with email: " + email + " does not exist."));
+
+            paymentTransaction.setPhoneGuest(String.valueOf(booking.getPhoneNumber()));
+            paymentTransaction.setNameGuest(booking.getFullName());
+            paymentTransaction.setEmailGuest(booking.getEmail());
+            paymentTransaction.setCreateDate(LocalDateTime.now()); // Đảm bảo rằng create_date được đặt
+            paymentTransaction.setTransactionCode(request.getParameter("vnp_TxnRef"));
+            paymentTransactionRepository.save(paymentTransaction);
+
         }
         if (packageId != null) {
             ServicePackage servicePackage = packageService.findPackageWithPaymentTransactionById(Long.parseLong(packageId));
             paymentTransaction.setServicePackage(servicePackage);
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new IllegalArgumentException("User with email: " + email + " does not exist."));
+
+            paymentTransaction.setPhoneGuest(user.getPhoneNumber());
+            paymentTransaction.setNameGuest(user.getFullName());
+            paymentTransaction.setEmailGuest(user.getEmail());
+            paymentTransaction.setCreateDate(LocalDateTime.now()); // Đảm bảo rằng create_date được đặt
+            paymentTransaction.setTransactionCode(request.getParameter("vnp_TxnRef"));
+            paymentTransactionRepository.save(paymentTransaction);
         }
-        paymentTransaction.setPhoneGuest((String) request.getAttribute("phoneGuest"));
-        paymentTransaction.setNameGuest((String) request.getAttribute("nameGuest"));
-        paymentTransaction.setEmailGuest((String) request.getAttribute("emailGuest"));
-        paymentTransaction.setTransactionCode(request.getParameter("vnp_TxnRef"));
-        paymentTransactionRepository.save(paymentTransaction);
 
 
     }
