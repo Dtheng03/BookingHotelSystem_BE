@@ -1,8 +1,13 @@
 package com.chinhbean.bookinghotel.responses.user;
 
+import com.chinhbean.bookinghotel.enums.PackageStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.Column;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Getter
@@ -34,6 +39,19 @@ public class LoginResponse {
 
     private String email;
 
+    //package detail
     @JsonProperty("package_id")
     private Long packageId;
+
+    //package detail
+    @Enumerated(EnumType.STRING)
+    private PackageStatus status;
+
+    //package detail
+    @JsonProperty("package_start_date")
+    private LocalDate packageStartDate;
+
+    //package detail
+    @JsonProperty("package_end_date")
+    private LocalDate packageEndDate;
 }

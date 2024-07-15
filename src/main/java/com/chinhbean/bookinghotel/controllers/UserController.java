@@ -141,6 +141,9 @@ public class UserController {
 
             if (userDetail.getServicePackage() != null) {
                 builder.packageId(userDetail.getServicePackage().getId());
+                builder.packageStartDate(userDetail.getPackageStartDate());
+                builder.packageEndDate(userDetail.getPackageEndDate());
+                builder.status(userDetail.getStatus());
             }
 
             LoginResponse loginResponse = builder.build();
