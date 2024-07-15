@@ -78,7 +78,7 @@ public class PaymentService {
         if (bankCode != null && !bankCode.isEmpty()) {
             vnpParamsMap.put("vnp_BankCode", bankCode);
         }
-        vnpParamsMap.put("vnp_IpAddr", "103.77.246.24");
+        vnpParamsMap.put("vnp_IpAddr", VNPayUtil.getIpAddress(request));
 
         // Generate secure hash
         String queryUrl = VNPayUtil.getPaymentURL(vnpParamsMap, true);
