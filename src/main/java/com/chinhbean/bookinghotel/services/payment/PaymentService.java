@@ -45,7 +45,7 @@ public class PaymentService {
             vnpParamsMap.put("vnp_BankCode", bankCode);
         }
 
-        vnpParamsMap.put("vnp_IpAddr", "0:0:0:0:0:0:0:1");
+        vnpParamsMap.put("vnp_IpAddr", VNPayUtil.getIpAddress(request));
         String queryUrl = VNPayUtil.getPaymentURL(vnpParamsMap, true);
         String hashData = VNPayUtil.getPaymentURL(vnpParamsMap, false);
         queryUrl += "&vnp_SecureHash=" + VNPayUtil.hmacSHA512(vnPayConfig.getSecretKey(), hashData);
@@ -78,7 +78,7 @@ public class PaymentService {
         if (bankCode != null && !bankCode.isEmpty()) {
             vnpParamsMap.put("vnp_BankCode", bankCode);
         }
-        vnpParamsMap.put("vnp_IpAddr", "0:0:0:0:0:0:0:1");
+        vnpParamsMap.put("vnp_IpAddr", VNPayUtil.getIpAddress(request));
 
         // Generate secure hash
         String queryUrl = VNPayUtil.getPaymentURL(vnpParamsMap, true);
