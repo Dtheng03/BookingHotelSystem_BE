@@ -57,15 +57,6 @@ public class PaymentService {
         // Retrieve the vnp_TxnRef
         transactionCode = vnpParamsMap.get("vnp_TxnRef");
 
-        PaymentTransaction paymentTransaction = new PaymentTransaction();
-        paymentTransaction.setBooking(booking);
-        paymentTransaction.setPhoneGuest((String) request.getAttribute("phoneGuest"));
-        paymentTransaction.setNameGuest((String) request.getAttribute("nameGuest"));
-        paymentTransaction.setEmailGuest((String) request.getAttribute("emailGuest"));
-        paymentTransaction.setCreateDate(LocalDateTime.now());
-        paymentTransaction.setTransactionCode(transactionCode);
-        IPaymentTransactionRepository.save(paymentTransaction);
-
         return PaymentDTO.VNPayResponse.builder()
                 .code("ok")
                 .message("success")
