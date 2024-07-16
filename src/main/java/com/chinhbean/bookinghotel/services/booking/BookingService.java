@@ -66,11 +66,6 @@ public class BookingService implements IBookingService {
             user = IUserRepository.findById(bookingDTO.getUserId())
                     .orElseThrow(() -> new IllegalArgumentException("User with ID: " + bookingDTO.getUserId() + " does not exist."));
 
-            //handle partner
-            if(user.getRole().equals(Role.PARTNER)) {
-                throw new PermissionDenyException("Partner cannot book room");
-            }
-
         } else {
             user = IUserRepository.findByFullName("guest")
                     .orElseThrow(() -> new IllegalArgumentException("Guest user does not exist."));

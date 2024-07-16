@@ -2,9 +2,12 @@ package com.chinhbean.bookinghotel.controllers;
 
 import com.chinhbean.bookinghotel.dtos.BookingDTO;
 import com.chinhbean.bookinghotel.entities.Booking;
+import com.chinhbean.bookinghotel.entities.Role;
+import com.chinhbean.bookinghotel.entities.User;
 import com.chinhbean.bookinghotel.enums.BookingStatus;
 import com.chinhbean.bookinghotel.exceptions.DataNotFoundException;
 import com.chinhbean.bookinghotel.exceptions.PermissionDenyException;
+import com.chinhbean.bookinghotel.repositories.IUserRepository;
 import com.chinhbean.bookinghotel.responses.ResponseObject;
 import com.chinhbean.bookinghotel.responses.booking.BookingResponse;
 import com.chinhbean.bookinghotel.services.booking.IBookingService;
@@ -29,6 +32,7 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 public class BookingController {
     private final IBookingService bookingService;
+    private final IUserRepository userRepository;
 
     @GetMapping("/get-booking-detail/{bookingId}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_CUSTOMER','ROLE_PARTNER')")
@@ -64,6 +68,24 @@ public class BookingController {
                                 .status(HttpStatus.BAD_REQUEST)
                                 .build());
             }
+            User user;
+
+            //handle partner
+            if (bookingDTO.getUserId() != null) {
+                user = userRepository.findById(bookingDTO.getUserId())
+                        .orElseThrow(() -> new IllegalArgumentException("User with ID: " + bookingDTO.getUserId() + " does not exist."));
+
+                // Handle partner
+                if (user.getRole().getRoleName().equalsIgnoreCase(Role.PARTNER)) {
+                    throw new PermissionDenyException("Partner cannot book room");
+                }
+
+                //handle admin
+                if (user.getRole().getRoleName().equalsIgnoreCase(Role.ADMIN)) {
+                    throw new PermissionDenyException("Admin cannot book room");
+                }
+            }
+
             BookingResponse bookingResponse = bookingService.createBooking(bookingDTO);
             return ResponseEntity.ok().body(
                     ResponseObject.builder()
@@ -72,14 +94,21 @@ public class BookingController {
                             .message(MessageKeys.CREATE_BOOKING_SUCCESSFULLY)
                             .build());
         } catch (IllegalArgumentException | IllegalStateException e) {
-            // Xử lý các loại exception ném ra từ BookingService
+            // Handle specific exceptions thrown by BookingService
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ResponseObject.builder()
                             .message(e.getMessage())
                             .status(HttpStatus.INTERNAL_SERVER_ERROR)
                             .build());
+        } catch (PermissionDenyException e) {
+            // Handle permission deny exception
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    ResponseObject.builder()
+                            .message(e.getMessage())
+                            .status(HttpStatus.FORBIDDEN)
+                            .build());
         } catch (Exception e) {
-            // Xử lý các exception khác
+            // Handle other exceptions
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ResponseObject.builder()
                             .message("Failed to create booking.")
@@ -87,6 +116,7 @@ public class BookingController {
                             .build());
         }
     }
+
 
     @GetMapping("/get-bookings")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_CUSTOMER','ROLE_PARTNER')")
