@@ -1,7 +1,10 @@
 package com.chinhbean.bookinghotel.services.pack;
 
 import com.chinhbean.bookinghotel.dtos.DataMailDTO;
-import com.chinhbean.bookinghotel.entities.*;
+import com.chinhbean.bookinghotel.entities.PaymentTransaction;
+import com.chinhbean.bookinghotel.entities.Role;
+import com.chinhbean.bookinghotel.entities.ServicePackage;
+import com.chinhbean.bookinghotel.entities.User;
 import com.chinhbean.bookinghotel.enums.PackageStatus;
 import com.chinhbean.bookinghotel.exceptions.PermissionDenyException;
 import com.chinhbean.bookinghotel.repositories.IPaymentTransactionRepository;
@@ -225,16 +228,7 @@ public class PackageService implements IPackageService {
         if (Role.ADMIN.equals(currentUser.getRole().getRoleName())) {
 
             switch (newStatus) {
-                case ACTIVE:
-                    user.setStatus(newStatus);
-                    break;
-                case INACTIVE:
-                    user.setStatus(newStatus);
-                    break;
-                case PENDING:
-                    user.setStatus(newStatus);
-                    break;
-                case EXPIRED:
+                case ACTIVE, INACTIVE, PENDING, EXPIRED:
                     user.setStatus(newStatus);
                     break;
                 default:
@@ -246,7 +240,6 @@ public class PackageService implements IPackageService {
         user.setStatus(newStatus);
         userRepository.save(user);
     }
-
 
 
 }

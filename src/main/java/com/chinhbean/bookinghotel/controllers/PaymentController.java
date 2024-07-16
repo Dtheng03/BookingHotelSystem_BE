@@ -6,8 +6,8 @@ import com.chinhbean.bookinghotel.entities.PaymentTransaction;
 import com.chinhbean.bookinghotel.entities.ServicePackage;
 import com.chinhbean.bookinghotel.entities.User;
 import com.chinhbean.bookinghotel.exceptions.DataNotFoundException;
+import com.chinhbean.bookinghotel.repositories.IPaymentTransactionRepository;
 import com.chinhbean.bookinghotel.repositories.IUserRepository;
-import com.chinhbean.bookinghotel.repositories.PaymentTransactionRepository;
 import com.chinhbean.bookinghotel.responses.payment.PaymentResponse;
 import com.chinhbean.bookinghotel.services.booking.IBookingService;
 import com.chinhbean.bookinghotel.services.pack.IPackageService;
@@ -35,7 +35,7 @@ public class PaymentController {
     private final IUserRepository userRepository;
     private final IBookingService bookingService;
     private final IPackageService packageService;
-    private final PaymentTransactionRepository paymentTransactionRepository;
+    private final IPaymentTransactionRepository paymentTransactionRepository;
 
     @GetMapping("/vn-pay")
     public PaymentResponse<PaymentDTO.VNPayResponse> pay(
@@ -102,7 +102,7 @@ public class PaymentController {
                     throw new RuntimeException(e);
                 }
             } else if (packageId != null) {
-                paymentService.updatePaymentTransactionStatusForPackage(packageId, email, true);
+                paymentService.updatePaymentTransactionStatusForPackage(email, true);
                 ServicePackage servicePackage = packageService.findPackageWithPaymentTransactionById(Long.parseLong(packageId));
                 packageService.sendMailNotificationForPackagePayment(servicePackage, email);
                 savePaymentTransaction(request, null, packageId, email);
@@ -116,7 +116,7 @@ public class PaymentController {
             if (bookingId != null) {
                 paymentService.updatePaymentTransactionStatusForBooking(bookingId, false);
             } else if (packageId != null) {
-                paymentService.updatePaymentTransactionStatusForPackage(packageId, email, false);
+                paymentService.updatePaymentTransactionStatusForPackage(email, false);
             }
             response.sendRedirect("http://localhost:3000/payment-return/failed");
         }

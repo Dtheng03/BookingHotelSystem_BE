@@ -2,7 +2,10 @@ package com.chinhbean.bookinghotel.services.payment;
 
 import com.chinhbean.bookinghotel.configurations.VNPAYConfig;
 import com.chinhbean.bookinghotel.dtos.PaymentDTO;
-import com.chinhbean.bookinghotel.entities.*;
+import com.chinhbean.bookinghotel.entities.Booking;
+import com.chinhbean.bookinghotel.entities.BookingDetails;
+import com.chinhbean.bookinghotel.entities.PaymentTransaction;
+import com.chinhbean.bookinghotel.entities.User;
 import com.chinhbean.bookinghotel.enums.BookingStatus;
 import com.chinhbean.bookinghotel.enums.PackageStatus;
 import com.chinhbean.bookinghotel.repositories.*;
@@ -34,7 +37,7 @@ public class PaymentService {
         long amount = Integer.parseInt(request.getAttribute("amount").toString()) * 100L;
         String bankCode = (String) request.getAttribute("bankCode");
         Long bookingId = Long.parseLong(request.getAttribute("bookingId").toString());
-        String transactionCode = null;
+        String transactionCode;
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new IllegalArgumentException("Booking with ID: " + bookingId + " does not exist."));
 
@@ -76,7 +79,7 @@ public class PaymentService {
         Long packageId = Long.parseLong(request.getAttribute("packageId").toString());
         String userEmail = (String) request.getAttribute("emailGuest");
 
-        ServicePackage servicePackage = IServicePackageRepository.findById(packageId)
+        IServicePackageRepository.findById(packageId)
                 .orElseThrow(() -> new IllegalArgumentException("Package with ID: " + packageId + " does not exist."));
 
         Map<String, String> vnpParamsMap = vnPayConfig.getVNPayConfig(packageId.toString(),
@@ -126,10 +129,10 @@ public class PaymentService {
     }
 
     @Transactional
-    public void updatePaymentTransactionStatusForPackage(String packageId, String email, boolean isSuccess) {
+    public void updatePaymentTransactionStatusForPackage(String email, boolean isSuccess) {
         Optional<User> user = userRepository.findByEmail(email);
 
-        if (!user.isPresent()) {
+        if (user.isEmpty()) {
 
             throw new IllegalArgumentException("User with email: " + email + " does not exist.");
         }
@@ -143,7 +146,7 @@ public class PaymentService {
             user.get().setPackageStartDate(null);
             user.get().setPackageEndDate(null);
             user.get().setStatus(PackageStatus.INACTIVE);
-            PaymentTransaction paymentTransaction = new PaymentTransaction();
+            new PaymentTransaction();
             userRepository.save(user.get());
             IPaymentTransactionRepository.deleteByEmailGuest(email);
 
