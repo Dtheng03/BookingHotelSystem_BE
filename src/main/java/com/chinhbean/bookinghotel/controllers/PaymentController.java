@@ -104,8 +104,8 @@ public class PaymentController {
                 }
             } else if (packageId != null) {
                 paymentService.updatePaymentTransactionStatusForPackage(email, true);
-                ServicePackage servicePackage = packageService.findPackageWithPaymentTransactionById(Long.parseLong(packageId));
                 savePaymentTransaction(request, null, packageId, email);
+                ServicePackage servicePackage = packageService.findPackageWithPaymentTransactionById(Long.parseLong(packageId));
                 packageService.sendMailNotificationForPackagePayment(servicePackage, email);
                 response.sendRedirect("http://localhost:3000/login");
             } else {
