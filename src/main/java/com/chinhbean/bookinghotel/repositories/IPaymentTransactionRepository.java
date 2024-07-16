@@ -11,7 +11,7 @@ import java.util.Optional;
 
 @Repository
 
-public interface PaymentTransactionRepository extends JpaRepository<PaymentTransaction, Long> {
+public interface IPaymentTransactionRepository extends JpaRepository<PaymentTransaction, Long> {
     @Modifying
     @Transactional
     @Query("DELETE FROM PaymentTransaction pt WHERE pt.emailGuest = :emailGuest")

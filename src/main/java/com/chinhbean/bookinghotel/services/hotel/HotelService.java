@@ -236,6 +236,7 @@ public class HotelService implements IHotelService {
         if (updateDTO.getBrand() != null) {
             hotel.setBrand(updateDTO.getBrand());
         }
+        hotel.setStatus(HotelStatus.PENDING);
         if (updateDTO.getLocation() != null) {
             HotelLocationDTO locationDTO = updateDTO.getLocation();
             HotelLocation location = hotel.getLocation();

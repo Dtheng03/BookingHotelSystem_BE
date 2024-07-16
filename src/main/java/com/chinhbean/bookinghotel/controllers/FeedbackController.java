@@ -5,6 +5,7 @@ import com.chinhbean.bookinghotel.exceptions.DataNotFoundException;
 import com.chinhbean.bookinghotel.responses.ResponseObject;
 import com.chinhbean.bookinghotel.responses.feedback.FeedbackResponse;
 import com.chinhbean.bookinghotel.services.feedback.IFeedbackService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -60,7 +61,7 @@ public class FeedbackController {
 
     @PostMapping("/create-feedback")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_CUSTOMER')")
-    public ResponseEntity<ResponseObject> createFeedback(@RequestBody FeedbackDTO feedback) {
+    public ResponseEntity<ResponseObject> createFeedback(@Valid @RequestBody FeedbackDTO feedback) {
         try {
             FeedbackResponse createdFeedback = feedbackService.createFeedback(feedback);
             return ResponseEntity.status(HttpStatus.CREATED).body(ResponseObject.builder()
@@ -104,7 +105,7 @@ public class FeedbackController {
 
     @PutMapping("/update-feedback/{feedbackId}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_CUSTOMER')")
-    public ResponseEntity<ResponseObject> updateFeedback(@PathVariable Long feedbackId, @RequestBody FeedbackDTO feedback) {
+    public ResponseEntity<ResponseObject> updateFeedback(@PathVariable Long feedbackId, @Valid @RequestBody FeedbackDTO feedback) {
         try {
             FeedbackResponse updatedFeedback = feedbackService.updateFeedback(feedbackId, feedback);
             return ResponseEntity.status(HttpStatus.OK).body(ResponseObject.builder()

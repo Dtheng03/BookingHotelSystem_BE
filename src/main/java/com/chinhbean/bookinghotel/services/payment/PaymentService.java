@@ -21,9 +21,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class PaymentService {
     private final VNPAYConfig vnPayConfig;
-    private final PaymentTransactionRepository paymentTransactionRepository;
+    private final IPaymentTransactionRepository IPaymentTransactionRepository;
     private final IBookingRepository bookingRepository;
-    private final ServicePackageRepository servicePackageRepository;
+    private final IServicePackageRepository IServicePackageRepository;
     private final IUserRepository userRepository;
     private final IBookingDetailRepository bookingDetailRepository;
     private final IRoomTypeRepository roomTypeRepository;
@@ -61,7 +61,7 @@ public class PaymentService {
         paymentTransaction.setEmailGuest((String) request.getAttribute("emailGuest"));
         paymentTransaction.setCreateDate(LocalDateTime.now());
         paymentTransaction.setTransactionCode(transactionCode);
-        paymentTransactionRepository.save(paymentTransaction);
+        IPaymentTransactionRepository.save(paymentTransaction);
 
         return PaymentDTO.VNPayResponse.builder()
                 .code("ok")
@@ -75,7 +75,7 @@ public class PaymentService {
         String bankCode = (String) request.getAttribute("bankCode");
         Long packageId = Long.parseLong(request.getAttribute("packageId").toString());
         String userEmail = (String) request.getAttribute("userEmail");
-        ServicePackage servicePackage = servicePackageRepository.findById(packageId)
+        ServicePackage servicePackage = IServicePackageRepository.findById(packageId)
                 .orElseThrow(() -> new IllegalArgumentException("Package with ID: " + packageId + " does not exist."));
         String transactionCode = null;
         Map<String, String> vnpParamsMap = vnPayConfig.getVNPayConfig(packageId.toString(), "Thanh toan goi dich vu: " + packageId + " cho user " + userEmail);
@@ -100,7 +100,7 @@ public class PaymentService {
         paymentTransaction.setEmailGuest((String) request.getAttribute("emailGuest"));
         paymentTransaction.setCreateDate(LocalDateTime.now());
         paymentTransaction.setTransactionCode(transactionCode);
-        paymentTransactionRepository.save(paymentTransaction);
+        IPaymentTransactionRepository.save(paymentTransaction);
 
         return PaymentDTO.VNPayResponse.builder()
                 .code("ok")
@@ -122,7 +122,7 @@ public class PaymentService {
             for (BookingDetails bookingDetail : bookingDetails) {
                 roomTypeRepository.incrementRoomQuantity(bookingDetail.getRoomType().getId(), bookingDetail.getNumberOfRooms());
             }
-            paymentTransactionRepository.deleteByEmailGuest(booking.getEmail());
+            IPaymentTransactionRepository.deleteByEmailGuest(booking.getEmail());
 
         }
         bookingRepository.save(booking);
@@ -148,7 +148,7 @@ public class PaymentService {
             user.get().setStatus(PackageStatus.INACTIVE);
             PaymentTransaction paymentTransaction = new PaymentTransaction();
             userRepository.save(user.get());
-            paymentTransactionRepository.deleteByEmailGuest(email);
+            IPaymentTransactionRepository.deleteByEmailGuest(email);
 
         }
     }
