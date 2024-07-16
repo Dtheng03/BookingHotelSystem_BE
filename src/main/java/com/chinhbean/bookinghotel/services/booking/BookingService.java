@@ -91,8 +91,6 @@ public class BookingService implements IBookingService {
 
                 throw new IllegalArgumentException("Number of rooms must be greater than 0");
             }
-
-
             // Decrease room quantity
             int updatedRows = roomTypeRepository.decrementRoomQuantity(roomTypeId, bookingDetailDTO.getNumberOfRooms());
             if (updatedRows == 0) {
