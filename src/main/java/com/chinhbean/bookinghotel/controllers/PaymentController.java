@@ -14,6 +14,7 @@ import com.chinhbean.bookinghotel.services.pack.IPackageService;
 import com.chinhbean.bookinghotel.services.payment.PaymentService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -92,11 +93,11 @@ public class PaymentController {
         if ("00".equals(status)) {
             // Successful payment
             if (bookingId != null) {
-                paymentService.updatePaymentTransactionStatusForBooking(bookingId, true);
                 try {
                     Booking booking = bookingService.getBookingById(Long.parseLong(bookingId));
                     bookingService.sendMailNotificationForBookingPayment(booking);
                     savePaymentTransaction(request, bookingId, null, email);
+                    paymentService.updatePaymentTransactionStatusForBooking(bookingId, true);
                     response.sendRedirect("http://localhost:3000/payment-return/success");
                 } catch (DataNotFoundException e) {
                     throw new RuntimeException(e);
@@ -127,9 +128,6 @@ public class PaymentController {
         if (bookingId != null) {
             Booking booking = bookingService.getBookingById(Long.parseLong(bookingId));
             paymentTransaction.setBooking(booking);
-
-            User user = userRepository.findByEmail(email)
-                    .orElseThrow(() -> new IllegalArgumentException("User with email: " + email + " does not exist."));
 
             paymentTransaction.setPhoneGuest(String.valueOf(booking.getPhoneNumber()));
             paymentTransaction.setNameGuest(booking.getFullName());
