@@ -94,10 +94,10 @@ public class PaymentController {
             // Successful payment
             if (bookingId != null) {
                 try {
-                    Booking booking = bookingService.getBookingById(Long.parseLong(bookingId));
-                    bookingService.sendMailNotificationForBookingPayment(booking);
                     savePaymentTransaction(request, bookingId, null, email);
                     paymentService.updatePaymentTransactionStatusForBooking(bookingId, true);
+                    Booking booking = bookingService.getBookingById(Long.parseLong(bookingId));
+                    bookingService.sendMailNotificationForBookingPayment(booking);
                     response.sendRedirect("http://localhost:3000/payment-return/success");
                 } catch (DataNotFoundException e) {
                     throw new RuntimeException(e);
@@ -105,8 +105,8 @@ public class PaymentController {
             } else if (packageId != null) {
                 paymentService.updatePaymentTransactionStatusForPackage(packageId, email, true);
                 ServicePackage servicePackage = packageService.findPackageWithPaymentTransactionById(Long.parseLong(packageId));
-                packageService.sendMailNotificationForPackagePayment(servicePackage, email);
                 savePaymentTransaction(request, null, packageId, email);
+                packageService.sendMailNotificationForPackagePayment(servicePackage, email);
                 response.sendRedirect("http://localhost:3000/login");
             } else {
                 // Handle unexpected case where neither bookingId nor packageId is present
