@@ -58,13 +58,14 @@ public class BookingService implements IBookingService {
 
     @Transactional
     @Override
-    public BookingResponse createBooking(BookingDTO bookingDTO) {
+    public BookingResponse createBooking(BookingDTO bookingDTO) throws PermissionDenyException {
         User user;
         Booking booking;
 
         if (bookingDTO.getUserId() != null) {
             user = IUserRepository.findById(bookingDTO.getUserId())
                     .orElseThrow(() -> new IllegalArgumentException("User with ID: " + bookingDTO.getUserId() + " does not exist."));
+
         } else {
             user = IUserRepository.findByFullName("guest")
                     .orElseThrow(() -> new IllegalArgumentException("Guest user does not exist."));
