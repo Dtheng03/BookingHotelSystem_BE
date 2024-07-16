@@ -48,6 +48,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -295,9 +296,10 @@ public class UserService implements IUserService {
         return getUserDetailsFromToken(existingToken.getToken());
     }
 
-    @Override
     public List<UserResponse> getAllUsers(Long roleId) {
         List<User> users = IUserRepository.findByRoleId(roleId);
-        return users.stream().map(UserResponse::fromUser).toList();
+        return users.stream()
+                .map(UserResponse::fromUser)
+                .collect(Collectors.toList());
     }
 }

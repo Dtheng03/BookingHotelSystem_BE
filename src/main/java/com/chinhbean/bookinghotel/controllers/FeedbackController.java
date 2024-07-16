@@ -6,6 +6,7 @@ import com.chinhbean.bookinghotel.responses.ResponseObject;
 import com.chinhbean.bookinghotel.responses.feedback.FeedbackResponse;
 import com.chinhbean.bookinghotel.services.feedback.IFeedbackService;
 import jakarta.validation.Valid;
+import com.chinhbean.bookinghotel.utils.MessageKeys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -29,14 +30,14 @@ public class FeedbackController {
         if (feedback.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseObject.builder()
                     .status(HttpStatus.NOT_FOUND)
-                    .message("feedbacks not found")
+                    .message(MessageKeys.FEEDBACK_DOES_NOT_EXISTS)
                     .data(null)
                     .build());
         } else {
             return ResponseEntity.status(HttpStatus.OK).body(ResponseObject.builder()
                     .status(HttpStatus.OK)
                     .data(feedback)
-                    .message("Retrieved feedbacks successfully")
+                    .message(MessageKeys.RETRIEVED_ALL_FEEDBACKS_SUCCESSFULLY)
                     .build());
         }
     }
@@ -48,12 +49,12 @@ public class FeedbackController {
             return ResponseEntity.status(HttpStatus.OK).body(ResponseObject.builder()
                     .status(HttpStatus.OK)
                     .data(feedback)
-                    .message("Retrieved feedback successfully")
+                    .message(MessageKeys.RETRIEVED_FEEDBACK_SUCCESSFULLY)
                     .build());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseObject.builder()
                     .status(HttpStatus.NOT_FOUND)
-                    .message(e.getMessage())
+                    .message(MessageKeys.FEEDBACK_DOES_NOT_EXISTS)
                     .data(null)
                     .build());
         }
@@ -67,7 +68,7 @@ public class FeedbackController {
             return ResponseEntity.status(HttpStatus.CREATED).body(ResponseObject.builder()
                     .status(HttpStatus.CREATED)
                     .data(createdFeedback)
-                    .message("Feedback created successfully")
+                    .message(MessageKeys.CREATE_FEEDBACK_SUCCESSFULLY)
                     .build());
         } catch (DataNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseObject.builder()
@@ -78,7 +79,7 @@ public class FeedbackController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseObject.builder()
                     .status(HttpStatus.BAD_REQUEST)
-                    .message(e.getMessage())
+                    .message(MessageKeys.FEEDBACK_BAD_REQUEST)
                     .data(null)
                     .build());
         }
@@ -91,13 +92,13 @@ public class FeedbackController {
             feedbackService.deleteFeedback(feedbackId);
             return ResponseEntity.status(HttpStatus.OK).body(ResponseObject.builder()
                     .status(HttpStatus.OK)
-                    .message("Feedback deleted successfully")
+                    .message(MessageKeys.DELETE_FEEDBACK_SUCCESSFULLY)
                     .data(null)
                     .build());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseObject.builder()
                     .status(HttpStatus.NOT_FOUND)
-                    .message(e.getMessage())
+                    .message(MessageKeys.FEEDBACK_NOT_FOUND)
                     .data(null)
                     .build());
         }
@@ -111,12 +112,12 @@ public class FeedbackController {
             return ResponseEntity.status(HttpStatus.OK).body(ResponseObject.builder()
                     .status(HttpStatus.OK)
                     .data(updatedFeedback)
-                    .message("Feedback updated successfully")
+                    .message(MessageKeys.UPDATE_FEEDBACK_SUCCESSFULLY)
                     .build());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseObject.builder()
                     .status(HttpStatus.NOT_FOUND)
-                    .message(e.getMessage())
+                    .message(MessageKeys.FEEDBACK_NOT_FOUND)
                     .data(null)
                     .build());
         }
@@ -131,14 +132,14 @@ public class FeedbackController {
         if (feedbacks.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseObject.builder()
                     .status(HttpStatus.NOT_FOUND)
-                    .message("Feedbacks not found")
+                    .message(MessageKeys.FEEDBACK_DOES_NOT_EXISTS)
                     .data(null)
                     .build());
         } else {
             return ResponseEntity.status(HttpStatus.OK).body(ResponseObject.builder()
                     .status(HttpStatus.OK)
                     .data(feedbacks)
-                    .message("Retrieved feedbacks successfully")
+                    .message(MessageKeys.RETRIEVED_FEEDBACKS_BY_USER_SUCCESSFULLY)
                     .build());
         }
     }

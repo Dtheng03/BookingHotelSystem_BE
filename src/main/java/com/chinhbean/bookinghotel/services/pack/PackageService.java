@@ -1,10 +1,9 @@
 package com.chinhbean.bookinghotel.services.pack;
 
 import com.chinhbean.bookinghotel.dtos.DataMailDTO;
-import com.chinhbean.bookinghotel.entities.PaymentTransaction;
-import com.chinhbean.bookinghotel.entities.ServicePackage;
-import com.chinhbean.bookinghotel.entities.User;
+import com.chinhbean.bookinghotel.entities.*;
 import com.chinhbean.bookinghotel.enums.PackageStatus;
+import com.chinhbean.bookinghotel.exceptions.PermissionDenyException;
 import com.chinhbean.bookinghotel.repositories.IPaymentTransactionRepository;
 import com.chinhbean.bookinghotel.repositories.IServicePackageRepository;
 import com.chinhbean.bookinghotel.repositories.IUserRepository;
@@ -207,4 +206,47 @@ public class PackageService implements IPackageService {
         return IServicePackageRepository.findPackageWithPaymentTransactionById(packageId)
                 .orElseThrow(() -> new IllegalArgumentException("Package not found"));
     }
+
+    @Transactional
+    public void updatePackageStatus(Long userId, PackageStatus newStatus) throws PermissionDenyException {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if (user.getServicePackage() == null) {
+            throw new IllegalArgumentException("User does not have an package");
+        }
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+
+        ServicePackage servicePackage = user.getServicePackage();
+        if (servicePackage == null) {
+            throw new IllegalArgumentException("User does not have an active package");
+        }
+        if (Role.ADMIN.equals(currentUser.getRole().getRoleName())) {
+
+            switch (newStatus) {
+                case ACTIVE:
+                    user.setStatus(newStatus);
+                    break;
+                case INACTIVE:
+                    user.setStatus(newStatus);
+                    break;
+                case PENDING:
+                    user.setStatus(newStatus);
+                    break;
+                case EXPIRED:
+                    user.setStatus(newStatus);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid booking status");
+            }
+        } else {
+            throw new PermissionDenyException("You do not have permission to update the package status.");
+        }
+        user.setStatus(newStatus);
+        userRepository.save(user);
+    }
+
+
+
 }

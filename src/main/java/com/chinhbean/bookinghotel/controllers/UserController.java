@@ -141,6 +141,9 @@ public class UserController {
 
             if (userDetail.getServicePackage() != null) {
                 builder.packageId(userDetail.getServicePackage().getId());
+                builder.packageStartDate(userDetail.getPackageStartDate());
+                builder.packageEndDate(userDetail.getPackageEndDate());
+                builder.status(userDetail.getStatus());
             }
 
             LoginResponse loginResponse = builder.build();
@@ -253,7 +256,7 @@ public class UserController {
             UserListResponse userListResponse = UserListResponse.builder()
                     .users(users)
                     .totalPages(totalPages)
-                    .message("Success")
+                    .message(MessageKeys.RETRIEVED_ALL_USERS_SUCCESSFULLY)
                     .build();
 
             return ResponseEntity.ok(userListResponse);
@@ -269,7 +272,7 @@ public class UserController {
             UserListResponse errorResponse = UserListResponse.builder()
                     .users(Collections.emptyList())
                     .totalPages(0)
-                    .message("Failed to retrieve users")
+                    .message(MessageKeys.RETRIEVED_ALL_USERS_FAILED)
                     .build();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(errorResponse);
@@ -292,7 +295,7 @@ public class UserController {
     public ResponseEntity<String> deleteUser(@PathVariable("id") Long id) {
         try {
             userService.deleteUser(id);
-            return ResponseEntity.ok("Delete User Successfully");
+            return ResponseEntity.ok(MessageKeys.DELETE_USER_SUCCESSFULLY);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
         }
@@ -303,7 +306,7 @@ public class UserController {
     public ResponseEntity<?> updateUser(@RequestBody UserDTO userDTO) {
         try {
             userService.updateUser(userDTO);
-            return ResponseEntity.ok("Update Successfully");
+            return ResponseEntity.ok(MessageKeys.UPDATE_USER_SUCCESSFULLY);
         } catch (DataNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
@@ -354,7 +357,6 @@ public class UserController {
                     .body("Error retrieving users: " + e.getMessage());
         }
     }
-
     @PostMapping("/oauth2/facebook")
     public ResponseEntity<LoginResponse> handleFacebookLogin(@RequestParam String accessToken, HttpServletRequest request) {
         try {

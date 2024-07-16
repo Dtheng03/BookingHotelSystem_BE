@@ -1,6 +1,10 @@
 package com.chinhbean.bookinghotel.responses.user;
 
+import com.chinhbean.bookinghotel.enums.PackageStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.Column;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
@@ -14,9 +18,6 @@ import java.util.Date;
 public class UserResponse {
     @JsonProperty("id")
     private Long id;
-
-//    @JsonProperty("user_name")
-//    private String userName;
 
     @NotBlank(message = "email is required")
     private String email;
@@ -47,6 +48,12 @@ public class UserResponse {
     @JsonProperty("avatar")
     private String avatar;
 
+    @JsonProperty("package_id")
+    private Long packageId;
+
+    @Enumerated(EnumType.STRING)
+    private PackageStatus status;
+
     @JsonProperty("role")
     private com.chinhbean.bookinghotel.entities.Role role;
 
@@ -63,6 +70,8 @@ public class UserResponse {
                 .googleAccountId(user.getGoogleAccountId())
                 .role(user.getRole())
                 .avatar(user.getAvatar())
+                .packageId(user.getServicePackage() != null ? user.getServicePackage().getId() : null)
+                .status(user.getStatus())
                 .build();
     }
 }
