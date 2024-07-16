@@ -30,10 +30,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -134,6 +131,10 @@ public class OAuth2Service implements IOAuth2Service {
     }
 
     private User createOAuth2User(String email, String name, String accountId, boolean isGoogle) {
+        Optional<User> existingUser = userRepository.findByEmail(email);
+        if (existingUser.isPresent()) {
+            return existingUser.get();
+        }
         String randomPassword = UUID.randomUUID().toString().substring(0, 8);
         User newUser = User.builder()
                 .email(email)
