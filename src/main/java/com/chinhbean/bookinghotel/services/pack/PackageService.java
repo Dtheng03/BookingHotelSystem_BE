@@ -10,10 +10,13 @@ import com.chinhbean.bookinghotel.exceptions.PermissionDenyException;
 import com.chinhbean.bookinghotel.repositories.IPaymentTransactionRepository;
 import com.chinhbean.bookinghotel.repositories.IServicePackageRepository;
 import com.chinhbean.bookinghotel.repositories.IUserRepository;
+import com.chinhbean.bookinghotel.services.booking.BookingService;
 import com.chinhbean.bookinghotel.services.sendmails.IMailService;
 import com.chinhbean.bookinghotel.utils.MailTemplate;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -36,6 +39,8 @@ public class PackageService implements IPackageService {
     private final IMailService mailService;
     private final IPaymentTransactionRepository IPaymentTransactionRepository;
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
+    private static final Logger logger = LoggerFactory.getLogger(BookingService.class);
 
     @Transactional
     @Override
@@ -181,8 +186,9 @@ public class PackageService implements IPackageService {
             Optional<PaymentTransaction> paymentTransactionOpt = IPaymentTransactionRepository.findByEmailGuest(email);
             if (paymentTransactionOpt.isPresent()) {
                 PaymentTransaction paymentTransaction = paymentTransactionOpt.get();
-
+                logger.info("here dataMail.setTo");
                 dataMail.setTo(paymentTransaction.getEmailGuest());
+                logger.info("here dataMail.setSubject");
                 dataMail.setSubject(MailTemplate.SEND_MAIL_SUBJECT.PACKAGE_PAYMENT_SUCCESS);
 
                 NumberFormat currencyFormatter = NumberFormat.getInstance(new Locale("vi", "VN"));
@@ -193,10 +199,11 @@ public class PackageService implements IPackageService {
                 props.put("packageDuration", servicePackage.getDuration());
                 props.put("description", servicePackage.getDescription());
                 dataMail.setProps(props);
+                logger.info("here mailService.sendHtmlMail");
                 mailService.sendHtmlMail(dataMail, MailTemplate.SEND_MAIL_TEMPLATE.PACKAGE_PAYMENT_SUCCESS_TEMPLATE);
-                System.out.println("Email successfully sent to " + paymentTransaction.getEmailGuest());
+                logger.info("Email successfully sent to " + paymentTransaction.getEmailGuest());
             } else {
-                System.out.println("No payment transaction found for email: " + email);
+                logger.info("No payment transaction found for email: " + email);
             }
         } catch (Exception exp) {
             exp.printStackTrace();
