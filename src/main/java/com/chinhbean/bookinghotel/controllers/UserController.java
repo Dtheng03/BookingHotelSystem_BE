@@ -357,6 +357,7 @@ public class UserController {
                     .body("Error retrieving users: " + e.getMessage());
         }
     }
+
     @PostMapping("/oauth2/facebook")
     public ResponseEntity<LoginResponse> handleFacebookLogin(@RequestParam String accessToken, HttpServletRequest request) {
         try {

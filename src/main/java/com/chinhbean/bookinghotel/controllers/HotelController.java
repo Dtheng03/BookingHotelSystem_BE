@@ -14,6 +14,7 @@ import com.chinhbean.bookinghotel.services.hotel.IHotelImageService;
 import com.chinhbean.bookinghotel.services.hotel.IHotelService;
 import com.chinhbean.bookinghotel.utils.MessageKeys;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -109,7 +110,7 @@ public class HotelController {
 
     @PostMapping("/create")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_PARTNER')")
-    public ResponseEntity<ResponseObject> createHotel(@RequestBody HotelDTO hotelDTO) {
+    public ResponseEntity<ResponseObject> createHotel(@Valid @RequestBody HotelDTO hotelDTO) {
         try {
 
             HotelResponse createdHotel = hotelService.createHotel(hotelDTO);

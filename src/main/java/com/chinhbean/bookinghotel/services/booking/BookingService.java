@@ -109,9 +109,10 @@ public class BookingService implements IBookingService {
         // Initialize lazy-loaded collections
         savedBooking.getBookingDetails().forEach(detail -> {
             RoomType roomType = detail.getRoomType();
-            roomType.getRoomImages().size();
-            roomType.getRoomConveniences().size();
-            roomType.getType().getId();
+            int roomImagesSize = roomType.getRoomImages().size();
+            int roomConveniencesSize = roomType.getRoomConveniences().size();
+            Long typeId = roomType.getType().getId();
+            logger.info("RoomType ID: {} has {} images and {} conveniences.", typeId, roomImagesSize, roomConveniencesSize);
         });
 
         // Schedule a task to delete booking after 300 seconds if still PENDING
@@ -291,24 +292,6 @@ public class BookingService implements IBookingService {
         return bookingRepository.save(booking);
     }
 
-    //    PENDING, CONFIRMED, PAID, CHECKED_IN, CHECKED_OUT, CANCELLED
-//    @Transactional
-//    @Override
-//    public void updateStatus(Long bookingId, BookingStatus newStatus) throws DataNotFoundException, PermissionDenyException {
-//        logger.info("Updating status for booking with ID: {}", bookingId);
-//        Booking booking = bookingRepository.findById(bookingId)
-//                .orElseThrow(() -> new DataNotFoundException(MessageKeys.NO_BOOKINGS_FOUND));
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        User currentUser = (User) authentication.getPrincipal();
-//
-//        if (Role.PARTNER.equals(currentUser.getRole().getRoleName())) {
-//            if (newStatus == BookingStatus.CONFIRMED) {
-//                booking.setStatus(newStatus);
-//            }
-//        }
-//        bookingRepository.save(booking);
-//        logger.info("Status for booking with ID: {} updated successfully.", bookingId);
-//    }
     @Transactional
     @Override
     public void updateStatus(Long bookingId, BookingStatus newStatus) throws DataNotFoundException, PermissionDenyException {
@@ -323,16 +306,7 @@ public class BookingService implements IBookingService {
                 Role.PARTNER.equals(currentUser.getRole().getRoleName())) {
 
             switch (newStatus) {
-                case PENDING:
-                    booking.setStatus(newStatus);
-                    break;
-                case CONFIRMED:
-                    booking.setStatus(newStatus);
-                    break;
-                case PAID:
-                    booking.setStatus(newStatus);
-                    break;
-                case CHECKED_IN:
+                case PENDING, CONFIRMED, PAID, CHECKED_IN, CANCELLED:
                     booking.setStatus(newStatus);
                     break;
                 case CHECKED_OUT:
@@ -341,9 +315,6 @@ public class BookingService implements IBookingService {
                     for (BookingDetails bookingDetail : bookingDetails) {
                         roomTypeRepository.incrementRoomQuantity(bookingDetail.getRoomType().getId(), bookingDetail.getNumberOfRooms());
                     }
-                    break;
-                case CANCELLED:
-                    booking.setStatus(newStatus);
                     break;
                 default:
                     throw new IllegalArgumentException("Invalid booking status");

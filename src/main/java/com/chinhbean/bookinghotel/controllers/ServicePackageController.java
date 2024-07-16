@@ -2,9 +2,7 @@ package com.chinhbean.bookinghotel.controllers;
 
 import com.chinhbean.bookinghotel.entities.ServicePackage;
 import com.chinhbean.bookinghotel.entities.User;
-import com.chinhbean.bookinghotel.enums.BookingStatus;
 import com.chinhbean.bookinghotel.enums.PackageStatus;
-import com.chinhbean.bookinghotel.exceptions.DataNotFoundException;
 import com.chinhbean.bookinghotel.exceptions.PermissionDenyException;
 import com.chinhbean.bookinghotel.responses.ResponseObject;
 import com.chinhbean.bookinghotel.services.pack.IPackageService;
@@ -192,7 +190,7 @@ public class ServicePackageController {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             User currentUser = (User) authentication.getPrincipal();
-            if(currentUser.getServicePackage() == null) {
+            if (currentUser.getServicePackage() == null) {
                 return ResponseEntity.ok().body(
                         ResponseObject.builder()
                                 .status(HttpStatus.NOT_FOUND)

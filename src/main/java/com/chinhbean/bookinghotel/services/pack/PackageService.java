@@ -1,12 +1,15 @@
 package com.chinhbean.bookinghotel.services.pack;
 
 import com.chinhbean.bookinghotel.dtos.DataMailDTO;
-import com.chinhbean.bookinghotel.entities.*;
+import com.chinhbean.bookinghotel.entities.PaymentTransaction;
+import com.chinhbean.bookinghotel.entities.Role;
+import com.chinhbean.bookinghotel.entities.ServicePackage;
+import com.chinhbean.bookinghotel.entities.User;
 import com.chinhbean.bookinghotel.enums.PackageStatus;
 import com.chinhbean.bookinghotel.exceptions.PermissionDenyException;
+import com.chinhbean.bookinghotel.repositories.IPaymentTransactionRepository;
+import com.chinhbean.bookinghotel.repositories.IServicePackageRepository;
 import com.chinhbean.bookinghotel.repositories.IUserRepository;
-import com.chinhbean.bookinghotel.repositories.PaymentTransactionRepository;
-import com.chinhbean.bookinghotel.repositories.ServicePackageRepository;
 import com.chinhbean.bookinghotel.services.sendmails.IMailService;
 import com.chinhbean.bookinghotel.utils.MailTemplate;
 import jakarta.transaction.Transactional;
@@ -28,22 +31,22 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class PackageService implements IPackageService {
 
-    private final ServicePackageRepository servicePackageRepository;
+    private final IServicePackageRepository IServicePackageRepository;
     private final IUserRepository userRepository;
     private final IMailService mailService;
-    private final PaymentTransactionRepository paymentTransactionRepository;
+    private final IPaymentTransactionRepository IPaymentTransactionRepository;
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     @Transactional
     @Override
     public List<ServicePackage> getAllPackages() {
-        return servicePackageRepository.findAll();
+        return IServicePackageRepository.findAll();
     }
 
     @Transactional
     @Override
     public ServicePackage getPackageById(Long id) {
-        return servicePackageRepository.findById(id)
+        return IServicePackageRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Package with ID: " + id + " does not exist."));
     }
 
@@ -51,7 +54,7 @@ public class PackageService implements IPackageService {
     @Override
     public ServicePackage createPackage(ServicePackage servicePackage) {
         validatePackage(servicePackage);
-        return servicePackageRepository.save(servicePackage);
+        return IServicePackageRepository.save(servicePackage);
     }
 
     @Transactional
@@ -63,14 +66,14 @@ public class PackageService implements IPackageService {
         existingPackage.setDescription(updatedPackage.getDescription());
         existingPackage.setPrice(updatedPackage.getPrice());
         existingPackage.setDuration(updatedPackage.getDuration());
-        return servicePackageRepository.save(existingPackage);
+        return IServicePackageRepository.save(existingPackage);
     }
 
     @Transactional
     @Override
     public void deletePackage(Long id) {
         ServicePackage existingPackage = getPackageById(id);
-        servicePackageRepository.delete(existingPackage);
+        IServicePackageRepository.delete(existingPackage);
     }
 
     private void validatePackage(ServicePackage servicePackage) {
@@ -108,7 +111,7 @@ public class PackageService implements IPackageService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         //check package and get package
-        ServicePackage servicePackage = servicePackageRepository.findById(packageId)
+        ServicePackage servicePackage = IServicePackageRepository.findById(packageId)
                 .orElseThrow(() -> new IllegalArgumentException("Package not found"));
 
         //check date > now
@@ -164,7 +167,6 @@ public class PackageService implements IPackageService {
             currentUser.setServicePackage(null);
             currentUser.setPackageStartDate(null);
             currentUser.setPackageEndDate(null);
-            currentUser.setStatus(PackageStatus.EXPIRED);
             userRepository.save(currentUser);
             return true;
         }
@@ -176,7 +178,7 @@ public class PackageService implements IPackageService {
         try {
             DataMailDTO dataMail = new DataMailDTO();
 
-            Optional<PaymentTransaction> paymentTransactionOpt = paymentTransactionRepository.findByEmailGuest(email);
+            Optional<PaymentTransaction> paymentTransactionOpt = IPaymentTransactionRepository.findByEmailGuest(email);
             if (paymentTransactionOpt.isPresent()) {
                 PaymentTransaction paymentTransaction = paymentTransactionOpt.get();
 
@@ -204,7 +206,7 @@ public class PackageService implements IPackageService {
 
     @Override
     public ServicePackage findPackageWithPaymentTransactionById(Long packageId) {
-        return servicePackageRepository.findPackageWithPaymentTransactionById(packageId)
+        return IServicePackageRepository.findPackageWithPaymentTransactionById(packageId)
                 .orElseThrow(() -> new IllegalArgumentException("Package not found"));
     }
 
@@ -226,16 +228,7 @@ public class PackageService implements IPackageService {
         if (Role.ADMIN.equals(currentUser.getRole().getRoleName())) {
 
             switch (newStatus) {
-                case ACTIVE:
-                    user.setStatus(newStatus);
-                    break;
-                case INACTIVE:
-                    user.setStatus(newStatus);
-                    break;
-                case PENDING:
-                    user.setStatus(newStatus);
-                    break;
-                case EXPIRED:
+                case ACTIVE, INACTIVE, PENDING, EXPIRED:
                     user.setStatus(newStatus);
                     break;
                 default:
@@ -247,7 +240,6 @@ public class PackageService implements IPackageService {
         user.setStatus(newStatus);
         userRepository.save(user);
     }
-
 
 
 }

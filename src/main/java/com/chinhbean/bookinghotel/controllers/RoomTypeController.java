@@ -10,6 +10,7 @@ import com.chinhbean.bookinghotel.responses.room.RoomTypeResponse;
 import com.chinhbean.bookinghotel.services.room.IRoomImageService;
 import com.chinhbean.bookinghotel.services.room.IRoomTypeService;
 import com.chinhbean.bookinghotel.utils.MessageKeys;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -39,7 +40,7 @@ public class RoomTypeController {
     @PostMapping("/create")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_PARTNER')")
 
-    public ResponseEntity<ResponseObject> createRoomType(@RequestBody RoomTypeDTO roomTypeDTO) {
+    public ResponseEntity<ResponseObject> createRoomType(@Valid @RequestBody RoomTypeDTO roomTypeDTO) {
         try {
             RoomTypeResponse createdRoomType = roomTypeService.createRoomType(roomTypeDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body(ResponseObject.builder()
@@ -132,7 +133,7 @@ public class RoomTypeController {
     @PutMapping("/update/{roomTypeId}")
     @PreAuthorize("hasAnyAuthority('ROLE_PARTNER')")
 
-    public ResponseEntity<ResponseObject> updateRoomType(@PathVariable Long roomTypeId, @RequestBody RoomTypeDTO roomTypeDTO) {
+    public ResponseEntity<ResponseObject> updateRoomType(@PathVariable Long roomTypeId, @Valid @RequestBody RoomTypeDTO roomTypeDTO) {
         try {
             RoomTypeResponse updatedRoomType = roomTypeService.updateRoomType(roomTypeId, roomTypeDTO);
             return ResponseEntity.status(HttpStatus.OK).body(ResponseObject.builder()
