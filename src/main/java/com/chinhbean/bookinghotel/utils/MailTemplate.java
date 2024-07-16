@@ -6,7 +6,7 @@ public class MailTemplate {
 
         public final static String OTP_SEND = "MÃ OTP XÁC THỰC";
 
-        public final static String NEW_PASSWORD = "YOUR NEW PASSWORD";
+        public final static String NEW_PASSWORD = "NEW LOGIN INFORMATION";
 
         public final static String BOOKING_PAYMENT_SUCCESS = "BOOKING PAYMENT SUCCESSFUL!";
 
