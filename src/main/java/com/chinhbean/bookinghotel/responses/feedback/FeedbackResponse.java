@@ -15,8 +15,8 @@ public class FeedbackResponse {
     @JsonProperty("id")
     private Long id;
 
-    @JsonProperty("userId")
-    private Long userId;
+    @JsonProperty("fullName")
+    private String fullName;
 
     @JsonProperty("hotelId")
     private Long hotelId;
@@ -30,7 +30,7 @@ public class FeedbackResponse {
     public static FeedbackResponse fromFeedback(Feedback feedback) {
         return FeedbackResponse.builder()
                 .id(feedback.getId())
-                .userId(feedback.getUser().getId())
+                .fullName(feedback.getUser().getFullName())
                 .hotelId(feedback.getHotel().getId())
                 .rating(feedback.getRating())
                 .comment(feedback.getComment())
