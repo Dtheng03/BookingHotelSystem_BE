@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface IUserService {
@@ -41,4 +42,8 @@ public interface IUserService {
     User getUserDetailsFromRefreshToken(String refreshToken) throws Exception;
 
     List<UserResponse> getAllUsers(Long roleId);
+
+
+     BigDecimal getTotalRevenueFromActivePackages();
+
 }

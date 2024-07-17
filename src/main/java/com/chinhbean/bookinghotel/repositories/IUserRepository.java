@@ -1,6 +1,7 @@
 package com.chinhbean.bookinghotel.repositories;
 
 import com.chinhbean.bookinghotel.entities.User;
+import com.chinhbean.bookinghotel.enums.PackageStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,4 +40,8 @@ public interface IUserRepository extends JpaRepository<User, Long> {
     List<User> findByRoleId(Long roleId);
 
     Optional<User> findByEmailOrPhoneNumber(String email, String phoneNumber);
+
+    @Query("SELECT SUM(sp.price) FROM User u JOIN u.servicePackage sp WHERE u.status = :status")
+    BigDecimal findTotalRevenueByPackageStatus(PackageStatus status);
+
 }

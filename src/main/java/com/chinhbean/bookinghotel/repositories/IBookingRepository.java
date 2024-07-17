@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -55,4 +56,9 @@ public interface IBookingRepository extends JpaRepository<Booking, Long> {
             @Param("checkOut") LocalDate checkOut);
 
     List<Booking> findByUserAndHotelAndStatus(User user, Hotel hotel, BookingStatus status);
+
+    //handle dashboard
+    @Query("SELECT SUM(b.totalPrice) FROM Booking b WHERE b.status = :status")
+    BigDecimal findTotalRevenueByStatus(BookingStatus status);
+
 }
