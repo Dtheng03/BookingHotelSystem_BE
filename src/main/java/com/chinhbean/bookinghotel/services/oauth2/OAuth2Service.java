@@ -11,17 +11,12 @@ import com.chinhbean.bookinghotel.responses.user.LoginResponse;
 import com.chinhbean.bookinghotel.services.sendmails.MailService;
 import com.chinhbean.bookinghotel.services.token.ITokenService;
 import com.chinhbean.bookinghotel.utils.MailTemplate;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.gson.GsonFactory;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -42,9 +37,6 @@ public class OAuth2Service implements IOAuth2Service {
     private final JwtTokenUtils jwtTokenUtils;
     private final ITokenService tokenService;
     private static final Logger logger = LoggerFactory.getLogger(OAuth2Service.class);
-
-    @Value("${spring.security.oauth2.client.registration.google.client-id}")
-    private String googleClientId;
 
     @Transactional
     @Override
@@ -75,32 +67,36 @@ public class OAuth2Service implements IOAuth2Service {
     }
 
     @Transactional
-    @Override
-    public LoginResponse handleGoogleLogin(String token, HttpServletRequest request) throws Exception {
-        try {
-            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory())
-                    .setAudience(Collections.singletonList(googleClientId))
-                    .build();
+@Override
+public LoginResponse handleGoogleLogin(String accessToken, HttpServletRequest request) throws Exception {
+    try {
+        final String googleUserInfoEndpoint = "https://www.googleapis.com/oauth2/v3/userinfo?access_token=" + accessToken;
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                googleUserInfoEndpoint,
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<>() {}
+        );
 
-            GoogleIdToken idToken = verifier.verify(token);
+        Map<String, Object> userAttributes = response.getBody();
 
-            if (idToken != null) {
-                GoogleIdToken.Payload payload = idToken.getPayload();
-                String email = payload.getEmail();
-                String name = (String) payload.get("name");
-                String googleId = payload.getSubject();
+        if (userAttributes != null && userAttributes.containsKey("sub")) { // "sub" is the user ID in Google's response
+            String googleId = (String) userAttributes.get("sub");
+            String email = (String) userAttributes.get("email");
+            String name = (String) userAttributes.get("name");
 
-                User user = processGoogleUser(email, name, googleId);
+            User user = processGoogleUser(email, name, googleId);
 
-                return generateLoginResponse(user, request, "Google login successful");
-            } else {
-                throw new Exception("Invalid ID token");
-            }
-        } catch (Exception e) {
-            logger.error("Google login error", e);
-            throw new Exception("Google login failed: " + e.getMessage());
+            return generateLoginResponse(user, request, "Google login successful");
+        } else {
+            throw new Exception("Invalid Google access token");
         }
+    } catch (Exception e) {
+        logger.error("Google login error", e);
+        throw new Exception("Google login failed: " + e.getMessage());
     }
+}
 
     public User processFacebookUser(String email, String name, String facebookId) {
         return userRepository.findByEmail(email)
