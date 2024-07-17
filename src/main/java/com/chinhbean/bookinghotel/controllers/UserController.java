@@ -370,9 +370,9 @@ public class UserController {
     }
 
     @GetMapping("/oauth2/google")
-    public ResponseEntity<LoginResponse> handleGoogleLogin(@RequestParam String token, HttpServletRequest request) {
+    public ResponseEntity<LoginResponse> handleGoogleLogin(@RequestParam String accessToken, HttpServletRequest request) {
         try {
-            LoginResponse response = oAuth2Service.handleGoogleLogin(token, request);
+            LoginResponse response = oAuth2Service.handleGoogleLogin(accessToken, request);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
