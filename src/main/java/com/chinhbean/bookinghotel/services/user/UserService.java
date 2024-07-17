@@ -14,6 +14,7 @@ import com.chinhbean.bookinghotel.entities.Role;
 import com.chinhbean.bookinghotel.entities.Token;
 import com.chinhbean.bookinghotel.entities.User;
 import com.chinhbean.bookinghotel.enums.HotelStatus;
+import com.chinhbean.bookinghotel.enums.PackageStatus;
 import com.chinhbean.bookinghotel.exceptions.DataNotFoundException;
 import com.chinhbean.bookinghotel.exceptions.InvalidParamException;
 import com.chinhbean.bookinghotel.exceptions.PermissionDenyException;
@@ -47,6 +48,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -302,4 +304,9 @@ public class UserService implements IUserService {
                 .map(UserResponse::fromUser)
                 .collect(Collectors.toList());
     }
+
+    public BigDecimal getTotalRevenueFromActivePackages() {
+        return IUserRepository.findTotalRevenueByPackageStatus(PackageStatus.ACTIVE);
+    }
+
 }
