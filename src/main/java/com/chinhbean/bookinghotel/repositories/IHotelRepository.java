@@ -32,32 +32,32 @@ public interface IHotelRepository extends JpaRepository<Hotel, Long>, JpaSpecifi
             Pageable pageable);
 
 
-    @Query("SELECT h FROM Hotel h " +
-            "LEFT JOIN FETCH h.conveniences c " +
+    @Query("SELECT DISTINCT h FROM Hotel h " +
+            "JOIN h.conveniences c " +
             "LEFT JOIN FETCH h.roomTypes rt " +
             "LEFT JOIN FETCH rt.type t " +
             "LEFT JOIN FETCH rt.roomConveniences rc " +
             "LEFT JOIN FETCH rt.roomImages " +
             "LEFT JOIN FETCH h.location l " +
-            "WHERE (h.rating = :rating) OR " +
-            "(c.freeBreakfast = :freeBreakfast) OR " +
-            "(c.pickUpDropOff = :pickUpDropOff) OR " +
-            "(c.restaurant = :restaurant) OR " +
-            "(c.bar = :bar) OR " +
-            "(c.pool = :pool) OR " +
-            "(c.freeInternet = :freeInternet) OR " +
-            "(c.reception24h = :reception24h) OR " +
-            "(c.laundry = :laundry) AND " +
+            "WHERE ((:rating IS NULL OR h.rating = :rating) OR " +
+            "(:freeBreakfast IS NULL OR c.freeBreakfast = :freeBreakfast) OR " +
+            "(:pickUpDropOff IS NULL OR c.pickUpDropOff = :pickUpDropOff) OR " +
+            "(:restaurant IS NULL OR c.restaurant = :restaurant) OR " +
+            "(:bar IS NULL OR c.bar = :bar) OR " +
+            "(:pool IS NULL OR c.pool = :pool) OR " +
+            "(:freeInternet IS NULL OR c.freeInternet = :freeInternet) OR " +
+            "(:reception24h IS NULL OR c.reception24h = :reception24h) OR " +
+            "(:laundry IS NULL OR c.laundry = :laundry)) AND " +
             "h.status = 'ACTIVE'")
-    Page<Hotel> filterHotelWithConvenience(Integer rating,
-                                           Boolean freeBreakfast,
-                                           Boolean pickUpDropOff,
-                                           Boolean restaurant,
-                                           Boolean bar,
-                                           Boolean pool,
-                                           Boolean freeInternet,
-                                           Boolean reception24h,
-                                           Boolean laundry,
+    Page<Hotel> filterHotelWithConvenience(@Param("rating") Integer rating,
+                                           @Param("freeBreakfast") Boolean freeBreakfast,
+                                           @Param("pickUpDropOff") Boolean pickUpDropOff,
+                                           @Param("restaurant") Boolean restaurant,
+                                           @Param("bar") Boolean bar,
+                                           @Param("pool") Boolean pool,
+                                           @Param("freeInternet") Boolean freeInternet,
+                                           @Param("reception24h") Boolean reception24h,
+                                           @Param("laundry") Boolean laundry,
                                            Pageable pageable);
 
 }
