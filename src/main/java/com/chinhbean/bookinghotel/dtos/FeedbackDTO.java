@@ -14,8 +14,8 @@ public class FeedbackDTO {
     private Long hotelId;
 
     @NotNull(message = "Rating cannot be null")
-    @DecimalMin(value = "0.5", message = "Rating must be greater than 0 and can be 0.5")
-    @Max(value = 5, message = "Rating cannot be more than 5")
+    @Min(value = 1, message = "Rating must be greater than 1")
+    @Max(value = 10, message = "Rating cannot be more than 10")
     private Double rating;
 
     @Size(min = 1, max = 500, message = "Comment must be between 1 and 500 characters")

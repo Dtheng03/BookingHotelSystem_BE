@@ -62,6 +62,10 @@ public class FeedbackService implements IFeedbackService {
         Hotel hotel = hotelRepository.findById(feedbackDTO.getHotelId()).orElseThrow(() ->
                 new DataNotFoundException("Hotel not found with ID: " + feedbackDTO.getHotelId()));
 
+        boolean feedbackExists = feedbackRepository.existsByUserAndHotel(currentUser, hotel);
+        if (feedbackExists) {
+            throw new DataNotFoundException("User has already left feedback for this hotel");
+        }
         List<Booking> bookings = findBookingsByUserAndHotelAndStatus(currentUser, hotel);
         Booking mostRecentBooking = bookings.stream()
                 .max(Comparator.comparing(Booking::getCheckOutDate))

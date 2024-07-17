@@ -1,6 +1,8 @@
 package com.chinhbean.bookinghotel.repositories;
 
 import com.chinhbean.bookinghotel.entities.Feedback;
+import com.chinhbean.bookinghotel.entities.Hotel;
+import com.chinhbean.bookinghotel.entities.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,4 +23,6 @@ public interface IFeedbackRepository extends JpaRepository<Feedback, Long> {
     @Modifying
     @Query("DELETE FROM Feedback f WHERE f.id = :id")
     void deleteById(@NonNull @Param("id") Long id);
+
+    boolean existsByUserAndHotel(User currentUser, Hotel hotel);
 }
